@@ -1,0 +1,41 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /api/notifications
+
+spring:
+  application:
+    name: notification-service
+  kafka:
+    bootstrap-servers: d9gv03v2pim8v25absv0.any.ap-south-1.mpx.prd.cloud.redpanda.com:9092
+    consumer:
+      group-id: notification-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: SCRAM-SHA-256
+      sasl.jaas.config: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USERNAME:admin}" password="${KAFKA_PASSWORD:password}";'
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+notification:
+  email:
+    enabled: true
+    from: noreply@aai-ticketing.in
+  sms:
+    enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

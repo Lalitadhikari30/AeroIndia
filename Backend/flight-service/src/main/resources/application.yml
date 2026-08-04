@@ -1,0 +1,25 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /api/flights
+
+spring:
+  application:
+    name: flight-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/ticketing_flights}
+      database: ticketing_flights
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

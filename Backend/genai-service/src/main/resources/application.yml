@@ -1,0 +1,46 @@
+server:
+  port: 8086
+  servlet:
+    context-path: /api/genai
+
+spring:
+  application:
+    name: genai-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ticketing_genai
+    username: postgres
+    password: "${SPRING_DATASOURCE_PASSWORD:postgres}"
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+genai:
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:stub}
+    model: claude-sonnet-4-20250514
+  stub-mode: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 5000
