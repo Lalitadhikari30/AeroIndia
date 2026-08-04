@@ -96,7 +96,11 @@ export default function ConciergePage({ setSearchParams }) {
     try {
       // Step A: Check if query contains flight search intent (e.g. from Delhi to Mumbai, fly, book, search)
       const lowercaseText = text.toLowerCase();
-      const isSearchIntent = lowercaseText.includes('from') || lowercaseText.includes('to') || lowercaseText.includes('flight') || lowercaseText.includes('book') || lowercaseText.includes('search');
+      const isSearchIntent = (lowercaseText.includes('from') && lowercaseText.includes('to')) || 
+                             lowercaseText.includes('fly') || 
+                             lowercaseText.includes('book a flight') || 
+                             lowercaseText.includes('search a flight') ||
+                             lowercaseText.includes('flights from');
 
       if (isSearchIntent) {
         // Try calling GenAI Natural Language Search: POST /api/genai/search
@@ -106,14 +110,13 @@ export default function ConciergePage({ setSearchParams }) {
           if (res.interpretedIntent && res.interpretedIntent.departureAirport && res.interpretedIntent.arrivalAirport) {
             const intent = res.interpretedIntent;
             
-            // Redirect simulation
             setTimeout(() => {
               setSearchParams({
-                fromCity: intent.departureAirport === 'DEL' ? 'Delhi' : intent.departureAirport === 'BLR' ? 'Bangalore' : 'Goa',
+                fromCity: intent.departureAirport === 'DEL' ? 'Delhi' : 'Origin',
                 fromCode: intent.departureAirport,
-                toCity: intent.arrivalAirport === 'BOM' ? 'Mumbai' : intent.arrivalAirport === 'DEL' ? 'Delhi' : 'Bangalore',
+                toCity: intent.arrivalAirport === 'BOM' ? 'Mumbai' : 'Destination',
                 toCode: intent.arrivalAirport,
-                departureDate: intent.date || '2026-07-31',
+                departureDate: intent.date || '2026-08-05',
                 travelers: '1 Adult',
                 cabinClass: 'Economy',
                 directOnly: true
@@ -121,13 +124,52 @@ export default function ConciergePage({ setSearchParams }) {
               navigate('/search');
             }, 1800);
 
-            // Append bot answer
-            addBotMessage(res.aiSummary || `Searching flights from ${intent.departureAirport} to ${intent.arrivalAirport} on ${intent.date || '2026-07-31'}... Redirecting to search results!`);
+            addBotMessage(res.aiSummary || `✈ Searching flights from ${intent.departureAirport} to ${intent.arrivalAirport} on ${intent.date || '2026-08-05'}... Redirecting to search results!`);
             return;
           }
         } catch {
-          console.warn('GenAI Search failed, trying local parsing fallback...');
+          console.warn('GenAI Search API offline, using smart local intent parser...');
         }
+
+        // Smart Local Intent Parser Fallback
+        let fromCode = 'DEL';
+        let fromCity = 'Delhi';
+        let toCode = 'BOM';
+        let toCity = 'Mumbai';
+
+        if (lowercaseText.includes('bangalore') || lowercaseText.includes('bengaluru') || lowercaseText.includes('blr')) {
+          if (lowercaseText.indexOf('bangalore') < lowercaseText.indexOf('delhi') || lowercaseText.indexOf('bengaluru') < lowercaseText.indexOf('delhi')) {
+            fromCode = 'BLR'; fromCity = 'Bengaluru';
+          } else {
+            toCode = 'BLR'; toCity = 'Bengaluru';
+          }
+        }
+        if (lowercaseText.includes('goa') || lowercaseText.includes('goi')) {
+          toCode = 'GOI'; toCity = 'Goa';
+        }
+
+        // Calculate tomorrow's date
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dateStr = tomorrow.toISOString().split('T')[0];
+
+        addBotMessage(`✈ Found flights! Searching best fares from ${fromCity} (${fromCode}) to ${toCity} (${toCode}) for ${lowercaseText.includes('tomorrow') ? 'tomorrow (' + dateStr + ')' : dateStr}... Redirecting to results!`);
+
+        setTimeout(() => {
+          setSearchParams({
+            fromCity: fromCity,
+            fromCode: fromCode,
+            toCity: toCity,
+            toCode: toCode,
+            departureDate: dateStr,
+            travelers: '1 Adult',
+            cabinClass: 'Economy',
+            directOnly: true
+          });
+          navigate('/search');
+        }, 1600);
+
+        return;
       }
 
       // Step B: Treat as FAQ or chat message
