@@ -81,7 +81,7 @@ export default function HomePage({ searchParams, setSearchParams }) {
           <h1 className="hero-title">
             <span className="navy">Fly with </span>
             <span className="navy" style={{ fontWeight: 800 }}>Aero</span>
-            <span className="blue" style={{ fontWeight: 800 }}>India</span>
+            <span className="blue" style={{ fontWeight: 800 }}>इंडिया</span>
           </h1>
           <p className="hero-subtitle">
             Experience the spirit of India in the skies. Seamlessly book domestic and international flights with the nation's preferred carrier.

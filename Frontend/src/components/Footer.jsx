@@ -20,7 +20,7 @@ export default function Footer() {
             </div>
             <span className="brand-name" style={{ fontSize: '1.1rem' }}>
               <span className="aero">Aero</span>
-              <span className="india">India</span>
+              <span className="india">इंडिया</span>
             </span>
           </div>
 

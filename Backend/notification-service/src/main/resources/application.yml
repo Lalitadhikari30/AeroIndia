@@ -27,10 +27,15 @@ eureka:
   instance:
     prefer-ip-address: true
 
+resend:
+  api-key: ${RESEND_API_KEY:re_JYaDygST_8QQz312iEkDuUoebQBgvPJ3B}
+  from-email: onboarding@resend.dev
+  from-name: "Aeroइंडिया Flight Services"
+
 notification:
   email:
     enabled: true
-    from: noreply@aeroindia.com
+    from: onboarding@resend.dev
   sms:
     enabled: true
 

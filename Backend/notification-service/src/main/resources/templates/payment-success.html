@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful - Aeroइंडिया</title>
+  <style>
+    body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; color: #1e293b; }
+    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .header { background: linear-gradient(135deg, #0f766e 0%, #1d4ed8 100%); padding: 30px 24px; text-align: center; color: #ffffff; }
+    .logo { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin: 0; }
+    .logo span { color: #5eead4; }
+    .subtitle { font-size: 12px; text-transform: uppercase; letter-spacing: 2.5px; color: #ccfbf1; margin-top: 6px; }
+    .content { padding: 32px 24px; }
+    .receipt-card { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 22px; border-radius: 10px; margin: 24px 0; }
+    .grid { display: table; width: 100%; margin-bottom: 14px; }
+    .col { display: table-cell; vertical-align: top; width: 50%; }
+    .label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px; }
+    .val { font-size: 15px; color: #0f172a; font-weight: 700; }
+    .btn { display: inline-block; background: #0f766e; color: #ffffff !important; text-decoration: none; font-weight: 700; padding: 14px 28px; border-radius: 8px; margin-top: 20px; text-align: center; }
+    .footer { background: #f8fafc; padding: 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">Aero<span>इंडिया</span></div>
+      <div class="subtitle">Payment Confirmation &bull; Tax Invoice</div>
+    </div>
+    <div class="content">
+      <h2 style="margin-top:0; color:#0f172a;">Payment Received Successfully! 💳</h2>
+      <p style="line-height:1.6; color:#334155;">
+        Dear <strong><span th:text="${passengerName}">Passenger</span></strong>, your payment of <strong>₹<span th:text="${amountPaid}">6,800</span></strong> has been processed cleanly.
+      </p>
+
+      <div class="receipt-card">
+        <div class="grid">
+          <div class="col">
+            <div class="label">TRANSACTION ID</div>
+            <div class="val" style="color:#0f766e;" th:text="${transactionId}">TXN-884920</div>
+          </div>
+          <div class="col">
+            <div class="label">BOOKING ID</div>
+            <div class="val" th:text="${bookingId}">B-1002</div>
+          </div>
+        </div>
+        <div class="grid" style="margin-bottom:0;">
+          <div class="col">
+            <div class="label">AMOUNT PAID</div>
+            <div class="val" style="color:#166534;">₹<span th:text="${amountPaid}">6,800</span></div>
+          </div>
+          <div class="col">
+            <div class="label">PAYMENT DATE</div>
+            <div class="val" th:text="${paymentDate}">2026-08-04</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="http://localhost:5173/my-bookings" class="btn">View Booking Details</a>
+      </div>
+    </div>
+    <div class="footer">
+      <p>&copy; 2026 Aeroइंडिया Flight Services. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

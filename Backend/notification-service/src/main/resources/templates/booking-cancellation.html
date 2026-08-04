@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Cancelled - Aeroइंडिया</title>
+  <style>
+    body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; color: #1e293b; }
+    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .header { background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%); padding: 30px 24px; text-align: center; color: #ffffff; }
+    .logo { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin: 0; }
+    .logo span { color: #fca5a5; }
+    .subtitle { font-size: 12px; text-transform: uppercase; letter-spacing: 2.5px; color: #fecdd3; margin-top: 6px; }
+    .content { padding: 32px 24px; }
+    .cancel-card { background: #fef2f2; border: 1px solid #fecaca; padding: 22px; border-radius: 10px; margin: 24px 0; }
+    .grid { display: table; width: 100%; margin-bottom: 14px; }
+    .col { display: table-cell; vertical-align: top; width: 50%; }
+    .label { font-size: 11px; text-transform: uppercase; color: #7f1d1d; font-weight: 700; margin-bottom: 4px; }
+    .val { font-size: 15px; color: #0f172a; font-weight: 700; }
+    .footer { background: #f8fafc; padding: 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">Aero<span>इंडिया</span></div>
+      <div class="subtitle">Booking Cancellation &bull; Refund Notice</div>
+    </div>
+    <div class="content">
+      <h2 style="margin-top:0; color:#0f172a;">Booking Cancellation Notice</h2>
+      <p style="line-height:1.6; color:#334155;">
+        Dear <strong><span th:text="${passengerName}">Passenger</span></strong>, your booking <strong><span th:text="${bookingId}">B-1002</span></strong> has been cancelled as requested.
+      </p>
+
+      <div class="cancel-card">
+        <div class="grid">
+          <div class="col">
+            <div class="label">BOOKING ID</div>
+            <div class="val" th:text="${bookingId}">B-1002</div>
+          </div>
+          <div class="col">
+            <div class="label">CANCELLATION REASON</div>
+            <div class="val" th:text="${cancellationReason}">User Requested</div>
+          </div>
+        </div>
+        <div class="grid" style="margin-bottom:0;">
+          <div class="col">
+            <div class="label">REFUND AMOUNT</div>
+            <div class="val" style="color:#b91c1c;">₹<span th:text="${refundAmount}">6,200</span></div>
+          </div>
+          <div class="col">
+            <div class="label">STATUS</div>
+            <div class="val" style="color:#b91c1c;">CANCELLED</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="line-height:1.6; color:#475569; font-size:13px;">
+        Eligible refund amounts will be credited back to your original payment method within 5-7 working days.
+      </p>
+    </div>
+    <div class="footer">
+      <p>&copy; 2026 Aeroइंडिया Flight Services. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

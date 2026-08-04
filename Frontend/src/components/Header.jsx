@@ -41,7 +41,7 @@ export default function Header() {
           <div className="logo-text">
             <span className="brand-name">
               <span className="aero">Aero</span>
-              <span className="india">India</span>
+              <span className="india">इंडिया</span>
             </span>
             <span className="logo-subtitle">FLIGHT SERVICES</span>
           </div>

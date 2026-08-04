@@ -1,7 +1,10 @@
 package com.ticketing.notification.controller;
 
+import com.ticketing.notification.consumer.NotificationEventConsumer;
+import com.ticketing.notification.dto.BookingCancelledEvent;
 import com.ticketing.notification.dto.NotificationStats;
 import com.ticketing.notification.dto.PaymentAbandonedEvent;
+import com.ticketing.notification.dto.PaymentSuccessEvent;
 import com.ticketing.notification.dto.SearchAbandonedEvent;
 import com.ticketing.notification.dto.UserRegisteredEvent;
 import com.ticketing.notification.event.BookingEvent;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping
@@ -23,10 +27,14 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final EmailService emailService;
+    private final NotificationEventConsumer eventConsumer;
 
-    public NotificationController(NotificationService notificationService, EmailService emailService) {
+    public NotificationController(NotificationService notificationService, 
+                                  EmailService emailService,
+                                  NotificationEventConsumer eventConsumer) {
         this.notificationService = notificationService;
         this.emailService = emailService;
+        this.eventConsumer = eventConsumer;
     }
 
     @GetMapping("/recent")
@@ -48,6 +56,7 @@ public class NotificationController {
     @PostMapping("/booking-confirmed")
     public ResponseEntity<NotificationLog> sendBookingConfirmedNotification(@RequestBody BookingEvent event) {
         NotificationLog log = emailService.sendBookingConfirmation(event);
+        eventConsumer.processBookingConfirmed(event);
         return ResponseEntity.ok(log);
     }
 
@@ -63,27 +72,59 @@ public class NotificationController {
         return ResponseEntity.ok(log);
     }
 
-    @PostMapping("/test")
-    public ResponseEntity<String> sendTestNotification(@RequestParam(defaultValue = "BOOKING_CONFIRMED") String eventType) {
+    @PostMapping("/test/resend-booking")
+    public ResponseEntity<Map<String, Object>> testResendBooking(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
         BookingEvent event = BookingEvent.builder()
-                .eventType(eventType)
-                .bookingId("B1001")
+                .eventType("BOOKING_CONFIRMED")
+                .bookingId("B-1002")
                 .pnr("AI-9842")
-                .passengerId("P123")
-                .passengerName("John Doe")
-                .passengerEmail("johndoe@example.com")
-                .flightId("F456")
-                .flightNumber("AI-101")
-                .seatNumber("12A")
+                .passengerName("Rajesh Kumar")
+                .passengerEmail(recipientEmail)
+                .flightNumber("AI-801")
                 .departureAirport("DEL")
                 .arrivalAirport("BOM")
-                .departureTime(LocalDateTime.now().plusDays(2).toString())
-                .totalPrice(new BigDecimal("5400.00"))
-                .status("CONFIRMED")
-                .timestamp(LocalDateTime.now())
+                .departureTime("2026-08-05")
+                .seatNumber("12A")
+                .totalPrice(new BigDecimal("6800.00"))
                 .build();
-                
-        notificationService.processBookingEvent(event);
-        return ResponseEntity.ok("Test notification sent for event type: " + eventType);
+
+        eventConsumer.processBookingConfirmed(event);
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Resend booking confirmation email dispatched", "recipient", recipientEmail));
+    }
+
+    @PostMapping("/test/resend-payment")
+    public ResponseEntity<Map<String, Object>> testResendPayment(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
+        PaymentSuccessEvent event = PaymentSuccessEvent.builder()
+                .passengerName("Rajesh Kumar")
+                .passengerEmail(recipientEmail)
+                .bookingId("B-1002")
+                .pnr("AI-9842")
+                .flightNumber("AI-801")
+                .route("DEL -> BOM")
+                .amountPaid(new BigDecimal("6800.00"))
+                .transactionId("TXN-" + System.currentTimeMillis())
+                .paymentDate(LocalDateTime.now())
+                .build();
+
+        eventConsumer.processPaymentSuccess(event);
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Resend payment success email dispatched", "recipient", recipientEmail));
+    }
+
+    @PostMapping("/test/resend-cancellation")
+    public ResponseEntity<Map<String, Object>> testResendCancellation(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
+        BookingCancelledEvent event = BookingCancelledEvent.builder()
+                .passengerName("Rajesh Kumar")
+                .passengerEmail(recipientEmail)
+                .bookingId("B-1002")
+                .pnr("AI-9842")
+                .flightNumber("AI-801")
+                .route("DEL -> BOM")
+                .cancellationReason("User Requested Cancellation")
+                .refundAmount(new BigDecimal("6200.00"))
+                .cancellationDate(LocalDateTime.now())
+                .build();
+
+        eventConsumer.processBookingCancelled(event);
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Resend booking cancellation email dispatched", "recipient", recipientEmail));
     }
 }
