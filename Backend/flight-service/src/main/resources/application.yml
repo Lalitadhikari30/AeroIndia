@@ -8,7 +8,7 @@ spring:
     name: flight-service
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/ticketing_flights}
+      uri: ${MONGODB_URI:mongodb://localhost:27017/ticketing_flights?serverSelectionTimeoutMS=2000&connectTimeoutMS=2000}
       database: ticketing_flights
 
 eureka:

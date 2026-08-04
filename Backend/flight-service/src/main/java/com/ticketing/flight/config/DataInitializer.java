@@ -24,9 +24,13 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (airportRepository.count() == 0) {
-            seedAirports();
-            seedFlights();
+        try {
+            if (airportRepository.count() == 0) {
+                seedAirports();
+                seedFlights();
+            }
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(DataInitializer.class).warn("MongoDB is offline or unreachable. Skipping automatic airport/flight data seeding: {}", e.getMessage());
         }
     }
 
