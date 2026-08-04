@@ -304,7 +304,7 @@ export default function SearchResultsPage({ searchParams, setSelectedFlight }) {
             </div>
             <div className="exclusive-title">Lounge Access at IGI T3</div>
             <p style={{ color: '#166534', fontSize: '0.8rem', lineHeight: '1.4', marginTop: '6px' }}>
-              Complimentary gourmet buffet, high-speed Wi-Fi, and premium shower suites for Aeroइंडिया flyers. Upgrade now for just ₹1,200.
+              Complimentary gourmet buffet, high-speed Wi-Fi, and premium shower suites for AeroIndia flyers. Upgrade now for just ₹1,200.
             </p>
           </div>
         </aside>

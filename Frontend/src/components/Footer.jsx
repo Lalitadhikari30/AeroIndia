@@ -20,7 +20,7 @@ export default function Footer() {
             </div>
             <span className="brand-name" style={{ fontSize: '1.1rem' }}>
               <span className="aero">Aero</span>
-              <span className="india">इंडिया</span>
+              <span className="india">India</span>
             </span>
           </div>
 
@@ -43,7 +43,7 @@ export default function Footer() {
 
         {/* Bottom copyright info */}
         <div className="footer-bottom">
-          <p>© 2026 Aeroइंडिया Flight Services. Member of the Indian Skies Alliance. All rights reserved.</p>
+          <p>© 2026 AeroIndia Flight Services. Member of the Indian Skies Alliance. All rights reserved.</p>
         </div>
       </div>
     </footer>

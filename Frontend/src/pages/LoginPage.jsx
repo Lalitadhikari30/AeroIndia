@@ -54,7 +54,7 @@ export default function LoginPage() {
         
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>Login to Aeroइंडिया</h2>
+          <h2 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>Login to AeroIndia</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
             Access flights, manage itineraries, and track booking statuses
           </p>

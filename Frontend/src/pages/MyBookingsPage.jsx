@@ -155,7 +155,7 @@ export default function MyBookingsPage() {
         <div className="container-xl">
           <h1><span>🧳</span> My Bookings</h1>
           <p>
-            Manage your travel itinerary, download e-tickets, or request cancellations. Keep track of all your journeys with Aeroइंडिया.
+            Manage your travel itinerary, download e-tickets, or request cancellations. Keep track of all your journeys with AeroIndia.
           </p>
         </div>
       </section>

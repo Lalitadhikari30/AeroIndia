@@ -35,7 +35,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
           <div style={{ display: 'inline-flex', padding: '12px', borderRadius: '50%', backgroundColor: '#fef2f2', color: 'var(--danger-red)', marginBottom: '16px' }}>
             <ShieldAlert size={36} />
           </div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>Access Denied (उड़ान निषेध)</h2>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>Access Denied</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '24px', lineHeight: '1.6' }}>
             Your account role <strong>({role})</strong> does not have permission to view this panel.
           </p>

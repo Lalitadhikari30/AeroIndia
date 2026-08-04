@@ -1,4 +1,4 @@
-// Mock data fallback systems for Aeroइंडिया Flight Services
+// Mock data fallback systems for AeroIndia Flight Services
 
 export const TRENDING_ROUTES = [
   {
@@ -31,7 +31,7 @@ export const TRENDING_ROUTES = [
 ];
 
 export const FAQ_RESPONSES = {
-  baggage: "Aero\u0907\u0902\u0921\u093f\u092f\u093a allows 15kg of checked baggage and 7kg of cabin baggage on all standard domestic flights. Business class passengers enjoy a generous allowance of 25kg checked baggage.",
+  baggage: "AeroIndia allows 15kg of checked baggage and 7kg of cabin baggage on all standard domestic flights. Business class passengers enjoy a generous allowance of 25kg checked baggage.",
   cancellation: "Cancellations made more than 24 hours prior to departure incur a fee of \u20B93,000. Within 24 hours, bookings are non-refundable unless a Flexi ticket option was purchased.",
   checkin: "Web check-in opens 48 hours prior to your scheduled departure and closes 60 minutes before takeoff. You can complete it on our mobile app or website.",
   waitlist: "Waitlisted tickets (WL) are updated automatically. If seats become available due to cancellations, your status will change to Confirmed. You can track this using the PNR tracker.",

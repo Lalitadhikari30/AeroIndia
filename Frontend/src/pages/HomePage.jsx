@@ -3,15 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, Users, Briefcase, ArrowRightLeft, Shield, ShieldCheck, Headphones, Bot, TrendingUp } from 'lucide-react';
 import { api } from '../api/client';
 import { TRENDING_ROUTES } from '../data/mockData';
+import { AIRPORTS } from '../data/travelData';
 
 export default function HomePage({ searchParams, setSearchParams }) {
   const navigate = useNavigate();
-  const [airports, setAirports] = useState([
-    { id: '1', iataCode: 'DEL', city: 'Delhi', name: 'Indira Gandhi Intl' },
-    { id: '2', iataCode: 'BOM', city: 'Mumbai', name: 'Chhatrapati Shivaji' },
-    { id: '3', iataCode: 'BLR', city: 'Bangalore', name: 'Kempegowda Intl' },
-    { id: '4', iataCode: 'GOI', city: 'Goa', name: 'Dabolim Airport' }
-  ]);
+  const [airports, setAirports] = useState(AIRPORTS);
   const [localFrom, setLocalFrom] = useState(searchParams.fromCode || 'DEL');
   const [localTo, setLocalTo] = useState(searchParams.toCode || 'BOM');
   const [localDate, setLocalDate] = useState(searchParams.departureDate || '2026-07-31');
@@ -19,7 +15,7 @@ export default function HomePage({ searchParams, setSearchParams }) {
   const [localClass, setLocalClass] = useState(searchParams.cabinClass || 'Economy');
   const [localDirect, setLocalDirect] = useState(searchParams.directOnly || false);
 
-  // Fetch airports on mount
+  // Fetch airports on mount (merging if API responds)
   useEffect(() => {
     async function fetchAirports() {
       try {
@@ -28,8 +24,7 @@ export default function HomePage({ searchParams, setSearchParams }) {
           setAirports(list);
         }
       } catch (err) {
-        // Fallback already set, log warning
-        console.warn('Failed to load airports from API, using default list.', err);
+        // Fallback to local AIRPORTS list
       }
     }
     fetchAirports();
@@ -43,14 +38,14 @@ export default function HomePage({ searchParams, setSearchParams }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const fromAirport = airports.find(a => a.iataCode === localFrom) || { city: 'Delhi', iataCode: 'DEL' };
-    const toAirport = airports.find(a => a.iataCode === localTo) || { city: 'Mumbai', iataCode: 'BOM' };
+    const fromAirport = airports.find(a => a.iataCode === localFrom || a.code === localFrom) || { city: 'Delhi', iataCode: 'DEL' };
+    const toAirport = airports.find(a => a.iataCode === localTo || a.code === localTo) || { city: 'Mumbai', iataCode: 'BOM' };
 
     setSearchParams({
       fromCity: fromAirport.city,
-      fromCode: fromAirport.iataCode,
+      fromCode: fromAirport.iataCode || fromAirport.code,
       toCity: toAirport.city,
-      toCode: toAirport.iataCode,
+      toCode: toAirport.iataCode || toAirport.code,
       departureDate: localDate,
       travelers: localTravelers,
       cabinClass: localClass,
@@ -61,14 +56,14 @@ export default function HomePage({ searchParams, setSearchParams }) {
 
   // Helper for route booking click
   const handleTrendingBook = (route) => {
-    const fromAirport = airports.find(a => a.city.toLowerCase() === route.from.toLowerCase() || a.iataCode === (route.from === 'New Delhi' ? 'DEL' : 'BLR')) || { city: 'Delhi', iataCode: 'DEL' };
-    const toAirport = airports.find(a => a.city.toLowerCase() === route.to.toLowerCase()) || { city: 'Mumbai', iataCode: 'BOM' };
+    const fromAirport = airports.find(a => a.city.toLowerCase().includes(route.from.toLowerCase()) || a.iataCode === (route.from === 'New Delhi' ? 'DEL' : 'BLR')) || { city: 'Delhi', iataCode: 'DEL' };
+    const toAirport = airports.find(a => a.city.toLowerCase().includes(route.to.toLowerCase())) || { city: 'Mumbai', iataCode: 'BOM' };
 
     setSearchParams({
       fromCity: fromAirport.city,
-      fromCode: fromAirport.iataCode,
+      fromCode: fromAirport.iataCode || fromAirport.code,
       toCity: toAirport.city,
-      toCode: toAirport.iataCode,
+      toCode: toAirport.iataCode || toAirport.code,
       departureDate: '2026-07-31',
       travelers: '1 Adult',
       cabinClass: 'Economy',
@@ -85,7 +80,7 @@ export default function HomePage({ searchParams, setSearchParams }) {
           <h1 className="hero-title">
             <span className="navy">Fly with </span>
             <span className="navy" style={{ fontWeight: 800 }}>Aero</span>
-            <span className="blue" style={{ fontWeight: 800 }}>इंडिया</span>
+            <span className="blue" style={{ fontWeight: 800 }}>India</span>
           </h1>
           <p className="hero-subtitle">
             Experience the spirit of India in the skies. Seamlessly book domestic and international flights with the nation's preferred carrier.
@@ -272,12 +267,12 @@ export default function HomePage({ searchParams, setSearchParams }) {
         </div>
       </section>
 
-      {/* "Why Book with Aeroइंडिया?" Section */}
+      {/* "Why Book with AeroIndia?" Section */}
       <section className="why-book-section">
         <div className="container-xl why-book-grid">
           {/* Left info column */}
           <div className="why-book-left">
-            <h2 className="why-book-title">Why Book with Aeroइंडिया?</h2>
+            <h2 className="why-book-title">Why Book with AeroIndia?</h2>
             <p className="why-book-text">
               We are committed to providing a world-class travel experience that celebrates Indian hospitality and operational excellence.
             </p>
@@ -368,7 +363,7 @@ export default function HomePage({ searchParams, setSearchParams }) {
 
             {/* Right app promo */}
             <div className="promo-app-card">
-              <h3 className="promo-app-title">AEROइंडिया MOBILE &mdash; Coming Soon to iOS &amp; Android</h3>
+              <h3 className="promo-app-title">AEROINDIA MOBILE &mdash; Coming Soon to iOS &amp; Android</h3>
               <div className="qr-code-placeholder"></div>
               <p className="promo-app-caption">
                 Scan to pre-register for early access &amp; ₹500 off your first booking.

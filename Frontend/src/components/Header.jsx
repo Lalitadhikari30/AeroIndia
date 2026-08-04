@@ -41,7 +41,7 @@ export default function Header() {
           <div className="logo-text">
             <span className="brand-name">
               <span className="aero">Aero</span>
-              <span className="india">इंडिया</span>
+              <span className="india">India</span>
             </span>
             <span className="logo-subtitle">FLIGHT SERVICES</span>
           </div>
@@ -58,7 +58,7 @@ export default function Header() {
                 }
                 end
               >
-                <span>🌐</span> Flights (उड़ानें)
+                <span>🌐</span> Flights
               </NavLink>
               <NavLink
                 to="/my-bookings"
@@ -66,7 +66,7 @@ export default function Header() {
                   isActive ? 'nav-link active' : 'nav-link'
                 }
               >
-                <span>🧳</span> My Bookings (मेरी बुकिंग)
+                <span>🧳</span> My Bookings
               </NavLink>
             </>
           )}
@@ -106,10 +106,6 @@ export default function Header() {
 
         {/* Right: Actions */}
         <div className="header-actions" style={{ position: 'relative' }}>
-          <div className="lang-switch">
-            EN | HI <ChevronDown size={14} style={{ display: 'inline', marginLeft: '2px', verticalAlign: 'middle' }} />
-          </div>
-          
           <button className="btn-account" onClick={handleAccountClick}>
             <User size={16} />
             <span>
