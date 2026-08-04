@@ -148,12 +148,28 @@ export default function ConciergePage({ setSearchParams }) {
           toCode = 'GOI'; toCity = 'Goa';
         }
 
-        // Calculate tomorrow's date
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const dateStr = tomorrow.toISOString().split('T')[0];
+        // Extract specific dates like "10 August", "10th August", "August 10" or relative date "tomorrow"
+        let dateStr = '2026-08-10';
+        const monthNames = { august: '08', aug: '08', july: '07', jul: '07', september: '09', sep: '09', october: '10', oct: '10' };
+        
+        const datePattern1 = lowercaseText.match(/(\d{1,2})(st|nd|rd|th)?\s+(august|aug|july|jul|september|sep|october|oct)/i);
+        const datePattern2 = lowercaseText.match(/(august|aug|july|jul|september|sep|october|oct)\s+(\d{1,2})(st|nd|rd|th)?/i);
 
-        addBotMessage(`✈ Found flights! Searching best fares from ${fromCity} (${fromCode}) to ${toCity} (${toCode}) for ${lowercaseText.includes('tomorrow') ? 'tomorrow (' + dateStr + ')' : dateStr}... Redirecting to results!`);
+        if (datePattern1) {
+          const dayPadded = String(datePattern1[1]).padStart(2, '0');
+          const monthCode = monthNames[datePattern1[3].toLowerCase()] || '08';
+          dateStr = `2026-${monthCode}-${dayPadded}`;
+        } else if (datePattern2) {
+          const dayPadded = String(datePattern2[2]).padStart(2, '0');
+          const monthCode = monthNames[datePattern2[1].toLowerCase()] || '08';
+          dateStr = `2026-${monthCode}-${dayPadded}`;
+        } else if (lowercaseText.includes('tomorrow')) {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          dateStr = tomorrow.toISOString().split('T')[0];
+        }
+
+        addBotMessage(`✈ Found flights! Searching best fares from ${fromCity} (${fromCode}) to ${toCity} (${toCode}) for ${dateStr}... Redirecting to search results!`);
 
         setTimeout(() => {
           setSearchParams({
