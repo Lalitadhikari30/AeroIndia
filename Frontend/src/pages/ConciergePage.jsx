@@ -111,19 +111,33 @@ export default function ConciergePage({ setSearchParams }) {
       }
 
       // Step B: Treat as FAQ or chat message
-      // Call GenAI Chat: POST /api/genai/chat
+      // Try calling RAG Passenger Support Chatbot: POST /api/genai/chat/support
       try {
-        const chatRes = await api.post('/api/genai/chat', { message: text, conversationId });
-        if (chatRes.response) {
-          addBotMessage(chatRes.response);
-          if (chatRes.conversationId) setConversationId(chatRes.conversationId);
+        const supportRes = await api.post('/api/genai/chat/support', { query: text, conversationId });
+        if (supportRes.answer) {
+          let sourcesText = "";
+          if (supportRes.sources && supportRes.sources.length > 0) {
+            sourcesText = "\n\n📌 **Sources:** " + supportRes.sources.join(" | ");
+          }
+          addBotMessage(supportRes.answer + sourcesText);
+          if (supportRes.conversationId) setConversationId(supportRes.conversationId);
           return;
         }
-      } catch {
-        console.warn('GenAI Chat offline, trying local keyword lookup fallback...');
+      } catch (err) {
+        console.warn('RAG Support API offline, trying standard chat...', err);
+        try {
+          const chatRes = await api.post('/api/genai/chat', { message: text, conversationId });
+          if (chatRes.response) {
+            addBotMessage(chatRes.response);
+            if (chatRes.conversationId) setConversationId(chatRes.conversationId);
+            return;
+          }
+        } catch {
+          console.warn('GenAI Chat offline, using local fallback...');
+        }
       }
 
-      // Step C: If both service endpoints failed or no result, fallback to keyword matcher
+      // Step C: If all backend endpoints failed, fallback to keyword matcher
       const fallbackText = getCannedResponse(text);
       addBotMessage(fallbackText);
 
@@ -152,14 +166,14 @@ export default function ConciergePage({ setSearchParams }) {
 
   const handleChipClick = (chipText) => {
     let query = chipText;
-    if (chipText === "✈ Book a flight to Delhi") {
-      query = "search flight from Mumbai to Delhi on 2026-07-31";
-    } else if (chipText === "🛡 Check baggage policy") {
-      query = "What is the baggage policy?";
-    } else if (chipText === "🔄 Refund status") {
-      query = "How do I check my refund status?";
-    } else if (chipText === "🔍 Flight search help") {
-      query = "Help me search for flights";
+    if (chipText === "📦 Damaged cargo claim") {
+      query = "how do I claim for damaged cargo";
+    } else if (chipText === "🛡 Baggage loss at security") {
+      query = "I lost my bag at security check";
+    } else if (chipText === "💰 UDF fee at Delhi") {
+      query = "what is UDF fee at Delhi airport";
+    } else if (chipText === "⚖ Report staff misconduct") {
+      query = "how do I report AAI staff misconduct";
     }
     handleSendMessage(query);
   };
@@ -273,7 +287,12 @@ export default function ConciergePage({ setSearchParams }) {
 
           {/* Quick-action chips */}
           <div className="chat-chips-row">
-            {["✈ Book a flight to Delhi", "🛡 Check baggage policy", "🔄 Refund status", "🔍 Flight search help"].map((chip) => (
+            {[
+              "📦 Damaged cargo claim",
+              "🛡 Baggage loss at security",
+              "💰 UDF fee at Delhi",
+              "⚖ Report staff misconduct"
+            ].map((chip) => (
               <button
                 key={chip}
                 type="button"
