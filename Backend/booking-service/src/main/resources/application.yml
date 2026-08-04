@@ -16,6 +16,11 @@ spring:
       ddl-auto: update
     show-sql: false
 
+redisson:
+  enabled: ${ENABLE_REDIS:false}
+  address: "${REDIS_ADDRESS:redis://localhost:6379}"
+  password: "${REDIS_PASSWORD:}"
+
 eureka:
   client:
     service-url:

@@ -15,7 +15,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class RedissonConfig {
 
-    @Value("${redisson.address}")
+    @Value("${redisson.address:redis://localhost:6379}")
     private String address;
 
     @Value("${redisson.password:}")
@@ -48,8 +48,8 @@ public class RedissonConfig {
                     .setAddress(cleanAddress)
                     .setConnectionPoolSize(5)
                     .setConnectionMinimumIdleSize(2)
-                    .setConnectTimeout(10000)
-                    .setTimeout(10000)
+                    .setConnectTimeout(3000)
+                    .setTimeout(3000)
                     .setKeepAlive(true)
                     .setPingConnectionInterval(30000)
                     .setSslEnableEndpointIdentification(false)
@@ -65,7 +65,7 @@ public class RedissonConfig {
             log.info("Connecting to Redis at {} (username: {})", cleanAddress, parsedUsername);
             return Redisson.create(config);
         } catch (Exception e) {
-            log.error("Failed to connect to Redis. Distributed locking will be disabled.", e);
+            log.warn("Could not connect to Redis at {}. Distributed locking will fall back gracefully: {}", address, e.getMessage());
             return null;
         }
     }
