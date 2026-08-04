@@ -1,3 +1,0 @@
-@echo off
-echo Stopping all SkyPrime backend microservices...
-powershell -ExecutionPolicy Bypass -File "%~dp0Backend\stop-all.ps1"
