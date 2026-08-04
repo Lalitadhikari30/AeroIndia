@@ -27,10 +27,30 @@ export default function ConciergePage({ setSearchParams }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Canned fallback scanner matching keywords (Local Fallback)
+  // Canned fallback scanner matching keywords (Local Fallback when backend is offline)
   const getCannedResponse = (query) => {
     const text = query.toLowerCase();
     
+    // Cargo
+    if (text.includes('cargo') || text.includes('demurrage') || text.includes('consignee') || text.includes('awb')) {
+      return "Based on official AAI Cargo Guidelines:\n\n• Cargo Damage/Loss Claims: Register claim at Cargo Administration with copy of AWB, invoice, packing list, Joint Survey Report, and FIR application.\n• Grievances: Submit to In-charge at Air Cargo Complex or Airport Director. Written complaints acknowledged within 2 working days and resolved within 15 working days.\n• Escalation: Contact Executive Director (Cargo) at AAI HQ Delhi (Tel: 011-24657930).\n\n📌 Source: AAI Cargo FAQs";
+    }
+    
+    // Security & Baggage Loss
+    if (text.includes('security') || text.includes('cisf') || text.includes('lost') || text.includes('stolen') || text.includes('cctv')) {
+      return "Based on official AAI Security Guidelines:\n\n• Baggage Safety at Screening: Report immediate loss to Security Hold Area in-charge & CISF. CCTV recordings retained for 30 days.\n• Checked Baggage Loss: Contact the concerned airline directly. For loss at airport building, report to Airport Director / Terminal Manager.\n• Police FIR: Passengers are responsible for lodging an FIR with State Police for lost items.\n\n📌 Source: AAI Security FAQs";
+    }
+
+    // UDF / Fees
+    if (text.includes('udf') || text.includes('user development') || text.includes('development fee') || text.includes('psf')) {
+      return "Based on official AAI Fee Guidelines:\n\n• User Development Fee (UDF): Levied on departing passengers at Greenfield/JVC airports (Delhi: ₹200 domestic / ₹1300 intl; Bangalore: ₹260 domestic / ₹1070 intl; Hyderabad: ₹375 domestic / ₹1000 intl).\n• Passenger Service Fee (PSF): Collected as part of fare to meet security & facility costs.\n\n📌 Source: AAI General FAQs";
+    }
+
+    // Vigilance & Staff Misconduct
+    if (text.includes('misconduct') || text.includes('vigilance') || text.includes('bribe') || text.includes('corrupt') || text.includes('cvo')) {
+      return "Based on official AAI Vigilance Guidelines:\n\n• Reporting Misconduct/Corruption: File complaints via (1) AAI Vigilance Web Portal, (2) Toll-Free Hotline 1800-11-0402, or (3) Written complaint to Chief Vigilance Officer (CVO), AAI HQ, Rajiv Gandhi Bhawan, New Delhi - 110003.\n• Timelines: Verification takes 1 month; investigation takes 3 months.\n\n📌 Source: AAI Vigilance FAQs";
+    }
+
     // Baggage
     if (text.includes('baggage') || text.includes('luggage')) {
       return FAQ_RESPONSES.baggage;
