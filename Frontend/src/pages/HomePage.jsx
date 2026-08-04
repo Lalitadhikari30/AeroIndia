@@ -4,6 +4,7 @@ import { MapPin, Calendar, Users, Briefcase, ArrowRightLeft, Shield, ShieldCheck
 import { api } from '../api/client';
 import { TRENDING_ROUTES } from '../data/mockData';
 import { AIRPORTS } from '../data/travelData';
+import AirportSelect from '../components/AirportSelect';
 
 export default function HomePage({ searchParams, setSearchParams }) {
   const navigate = useNavigate();
@@ -38,8 +39,8 @@ export default function HomePage({ searchParams, setSearchParams }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const fromAirport = airports.find(a => a.iataCode === localFrom || a.code === localFrom) || { city: 'Delhi', iataCode: 'DEL' };
-    const toAirport = airports.find(a => a.iataCode === localTo || a.code === localTo) || { city: 'Mumbai', iataCode: 'BOM' };
+    const fromAirport = airports.find(a => (a.iataCode || a.code) === localFrom) || { city: 'Delhi', iataCode: 'DEL' };
+    const toAirport = airports.find(a => (a.iataCode || a.code) === localTo) || { city: 'Mumbai', iataCode: 'BOM' };
 
     setSearchParams({
       fromCity: fromAirport.city,
@@ -56,7 +57,7 @@ export default function HomePage({ searchParams, setSearchParams }) {
 
   // Helper for route booking click
   const handleTrendingBook = (route) => {
-    const fromAirport = airports.find(a => a.city.toLowerCase().includes(route.from.toLowerCase()) || a.iataCode === (route.from === 'New Delhi' ? 'DEL' : 'BLR')) || { city: 'Delhi', iataCode: 'DEL' };
+    const fromAirport = airports.find(a => a.city.toLowerCase().includes(route.from.toLowerCase()) || (a.iataCode || a.code) === (route.from === 'New Delhi' ? 'DEL' : 'BLR')) || { city: 'Delhi', iataCode: 'DEL' };
     const toAirport = airports.find(a => a.city.toLowerCase().includes(route.to.toLowerCase())) || { city: 'Mumbai', iataCode: 'BOM' };
 
     setSearchParams({
@@ -100,23 +101,12 @@ export default function HomePage({ searchParams, setSearchParams }) {
           {/* Row 1 */}
           <div className="search-row-1">
             {/* FROM */}
-            <div className="search-field">
-              <label className="form-label">From</label>
-              <div className="field-icon-wrapper">
-                <MapPin size={18} />
-              </div>
-              <select
-                className="form-select"
-                value={localFrom}
-                onChange={(e) => setLocalFrom(e.target.value)}
-              >
-                {airports.map((airport) => (
-                  <option key={airport.id || airport.iataCode} value={airport.iataCode}>
-                    {airport.city} ({airport.iataCode})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <AirportSelect
+              label="From"
+              value={localFrom}
+              onChange={(val) => setLocalFrom(val)}
+              airports={airports}
+            />
 
             {/* Swap Button */}
             <div className="swap-btn-container">
@@ -131,23 +121,12 @@ export default function HomePage({ searchParams, setSearchParams }) {
             </div>
 
             {/* TO */}
-            <div className="search-field">
-              <label className="form-label">To</label>
-              <div className="field-icon-wrapper">
-                <MapPin size={18} />
-              </div>
-              <select
-                className="form-select"
-                value={localTo}
-                onChange={(e) => setLocalTo(e.target.value)}
-              >
-                {airports.map((airport) => (
-                  <option key={airport.id || airport.iataCode} value={airport.iataCode}>
-                    {airport.city} ({airport.iataCode})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <AirportSelect
+              label="To"
+              value={localTo}
+              onChange={(val) => setLocalTo(val)}
+              airports={airports}
+            />
 
             {/* DEPARTURE */}
             <div className="search-field">
