@@ -30,6 +30,12 @@ genai:
   anthropic:
     api-key: ${ANTHROPIC_API_KEY:stub}
     model: claude-sonnet-4-20250514
+  voyage:
+    api-key: ${VOYAGE_API_KEY:stub}
+    model: voyage-3.5
+  rag:
+    top-k: 4
+    similarity-threshold: 0.45
   stub-mode: true
 
 springdoc:
