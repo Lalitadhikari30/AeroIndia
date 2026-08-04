@@ -94,9 +94,40 @@ export default function ReviewPage({ selectedFlight, selectedSeat, setLatestBook
       setLatestBooking(bookingResponse);
       setLatestPayment(paymentResponse);
 
+      // Trigger AeroIndia Booking Confirmation & e-Ticket Email
+      try {
+        await api.post('/api/notifications/booking-confirmed', {
+          eventType: 'BOOKING_CONFIRMED',
+          pnr: bookingResponse.pnr || 'AI-' + Math.floor(1000 + Math.random() * 9000),
+          passengerName,
+          passengerEmail,
+          flightNumber: flight.flightNumber || 'AI-801',
+          departureAirport: flight.departureAirport || 'DEL',
+          arrivalAirport: flight.arrivalAirport || 'BOM',
+          departureTime: '2026-08-05 08:30 AM',
+          seatNumber: selectedSeat ? selectedSeat.code : '14A',
+          totalPrice: totalAmount
+        });
+      } catch (e) {
+        console.warn('Booking confirmation email trigger offline', e);
+      }
+
       // Redirect to confirmation pass page
       navigate('/confirmation');
     } catch (err) {
+      // Trigger Abandoned Payment / Pending Reminder Notification
+      try {
+        await api.post('/api/notifications/abandoned-payment', {
+          passengerName: `${user?.firstName || 'Passenger'}`,
+          passengerEmail: user?.email || 'passenger@example.com',
+          pnr: 'AI-' + Math.floor(1000 + Math.random() * 9000),
+          flightRoute: `${flight.departureAirport || 'DEL'} to ${flight.arrivalAirport || 'BOM'}`,
+          amount: totalAmount
+        });
+      } catch (e) {
+        console.warn('Abandoned payment trigger offline', e);
+      }
+
       setError(err.message || 'Payment or booking transaction failed. Please check connection and retry.');
     } finally {
       setLoading(false);

@@ -12,6 +12,29 @@ export default function SearchResultsPage({ searchParams, setSelectedFlight }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Track if user selected a flight to book
+  const [hasBooked, setHasBooked] = useState(false);
+
+  useEffect(() => {
+    let booked = false;
+    return () => {
+      // Trigger Abandoned Search Notification if passenger leaves search page without booking
+      if (!booked && searchParams.fromCity && searchParams.toCity) {
+        try {
+          api.post('/api/notifications/abandoned-search', {
+            passengerName: 'Passenger',
+            passengerEmail: 'passenger@example.com',
+            fromCity: searchParams.fromCity || 'Delhi',
+            toCity: searchParams.toCity || 'Mumbai',
+            departureDate: searchParams.departureDate || '2026-08-05'
+          }).catch(err => console.warn('Abandoned search notification offline', err));
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, [searchParams]);
+
   // Filter States
   const [nonStopChecked, setNonStopChecked] = useState(true);
   const [oneStopChecked, setOneStopChecked] = useState(true);

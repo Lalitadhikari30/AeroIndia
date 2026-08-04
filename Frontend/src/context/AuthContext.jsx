@@ -115,6 +115,17 @@ export function AuthProvider({ children }) {
         role,
         accessCode
       });
+
+      // Trigger AeroIndia Welcome Email
+      try {
+        await api.post('/api/notifications/welcome', {
+          passengerName: `${firstName} ${lastName}`,
+          passengerEmail: email
+        });
+      } catch (e) {
+        console.warn('Welcome email trigger offline', e);
+      }
+
       setIsLoading(false);
       
       // Auto login after registration
