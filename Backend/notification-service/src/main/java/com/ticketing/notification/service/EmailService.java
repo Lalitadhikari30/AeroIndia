@@ -142,14 +142,67 @@ public class EmailService {
         dispatchEmail(recipientEmail, subject, htmlContent);
     }
 
+    @Value("${resend.api-key:${RESEND_API_KEY:}}")
+    private String resendApiKey;
+
+    @Value("${brevo.api-key:${BREVO_API_KEY:}}")
+    private String brevoApiKey;
+
+    private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+
     private void dispatchEmail(String recipientEmail, String subject, String htmlContent) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
             LOG.warn("⚠ No recipient email provided, skipping email dispatch for subject: {}", subject);
             return;
         }
 
-        // Run SMTP dispatch in a background thread so it never blocks the HTTP response thread
+        // Run email dispatch in a background thread so it never blocks the HTTP response thread
         CompletableFuture.runAsync(() -> {
+            // Priority 1: Resend HTTPS API (Port 443 - Never blocked on Render)
+            if (resendApiKey != null && !resendApiKey.isBlank()) {
+                try {
+                    org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+                    headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+                    headers.setBearerAuth(resendApiKey.trim());
+
+                    java.util.Map<String, Object> body = new java.util.HashMap<>();
+                    body.put("from", "AeroIndia <onboarding@resend.dev>");
+                    body.put("to", java.util.List.of(recipientEmail));
+                    body.put("subject", subject);
+                    body.put("html", htmlContent);
+
+                    org.springframework.http.HttpEntity<java.util.Map<String, Object>> entity = new org.springframework.http.HttpEntity<>(body, headers);
+                    restTemplate.postForEntity("https://api.resend.com/emails", entity, String.class);
+                    LOG.info("✅ Email dispatched successfully via Resend HTTPS API to {}", recipientEmail);
+                    return;
+                } catch (Exception e) {
+                    LOG.error("❌ Resend HTTPS API dispatch failed: {}", e.getMessage(), e);
+                }
+            }
+
+            // Priority 2: Brevo HTTPS API (Port 443 - Never blocked on Render)
+            if (brevoApiKey != null && !brevoApiKey.isBlank()) {
+                try {
+                    org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+                    headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+                    headers.set("api-key", brevoApiKey.trim());
+
+                    java.util.Map<String, Object> body = new java.util.HashMap<>();
+                    body.put("sender", java.util.Map.of("name", fromName, "email", fromEmail != null && fromEmail.contains("@") ? fromEmail : "noreply@aeroindia.com"));
+                    body.put("to", java.util.List.of(java.util.Map.of("email", recipientEmail)));
+                    body.put("subject", subject);
+                    body.put("htmlContent", htmlContent);
+
+                    org.springframework.http.HttpEntity<java.util.Map<String, Object>> entity = new org.springframework.http.HttpEntity<>(body, headers);
+                    restTemplate.postForEntity("https://api.brevo.com/v3/smtp/email", entity, String.class);
+                    LOG.info("✅ Email dispatched successfully via Brevo HTTPS API to {}", recipientEmail);
+                    return;
+                } catch (Exception e) {
+                    LOG.error("❌ Brevo HTTPS API dispatch failed: {}", e.getMessage(), e);
+                }
+            }
+
+            // Priority 3: Fallback to JavaMailSender SMTP
             try {
                 if (fromEmail == null || fromEmail.isBlank() || "noreply@aeroindia.com".equals(fromEmail)) {
                     LOG.warn("⚠ GMAIL_USERNAME is not configured or using default placeholder ({}). Emails may fail SMTP auth.", fromEmail);
@@ -164,7 +217,7 @@ public class EmailService {
                 mailSender.send(message);
                 LOG.info("✅ Email dispatched successfully via Gmail SMTP to {}", recipientEmail);
             } catch (Exception e) {
-                LOG.error("❌ Failed to send email to {}: {}. Make sure GMAIL_USERNAME and GMAIL_APP_PASSWORD (16-char App Password) are correctly set in Render environment variables.", recipientEmail, e.getMessage(), e);
+                LOG.error("❌ Failed to send email to {}: {}. Render blocks outbound SMTP ports 25, 465, and 587 on free plans. To send real emails from Render, add RESEND_API_KEY (from resend.com) to Render environment variables.", recipientEmail, e.getMessage());
             }
         });
     }
