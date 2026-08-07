@@ -88,7 +88,7 @@ spring:
       client:
         config:
           flight-service:
-            url: ${FLIGHT_SERVICE_URL}
+            url: ${FLIGHT_SERVICE_URL:https://aeroindia-flight-service.onrender.com}
 
 eureka:
   client:

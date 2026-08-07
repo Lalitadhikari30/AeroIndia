@@ -123,6 +123,9 @@ public class AuthService {
                 .build();
     }
 
+    @Value("${NOTIFICATION_SERVICE_URL:https://aeroindia-notification-service.onrender.com}")
+    private String notificationServiceUrl;
+
     private void triggerWelcomeEmail(RegisterRequest request) {
         try {
             String name = (request.getFirstName() != null ? request.getFirstName() : "") +
@@ -131,8 +134,16 @@ public class AuthService {
             payload.put("passengerName", name.trim());
             payload.put("passengerEmail", request.getEmail());
 
+            String targetUrl = notificationServiceUrl;
+            if (!targetUrl.endsWith("/api/notifications/welcome") && !targetUrl.endsWith("/api/notifications")) {
+                if (!targetUrl.endsWith("/")) targetUrl += "/";
+                targetUrl += "api/notifications/welcome";
+            } else if (targetUrl.endsWith("/api/notifications")) {
+                targetUrl += "/welcome";
+            }
+
             restTemplate.postForEntity(
-                    "http://notification-service/api/notifications/welcome",
+                    targetUrl,
                     payload,
                     Object.class
             );
