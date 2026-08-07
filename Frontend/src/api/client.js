@@ -44,9 +44,13 @@ export class ApiError extends Error {
   }
 }
 
-// Global request interceptor/runner
+// Global request interceptor/runner with timeout support
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
+  const timeoutMs = options.timeoutMs || 15000;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   
   const headers = {
     'Content-Type': 'application/json',
@@ -55,22 +59,24 @@ async function request(path, options = {}) {
 
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
-    // The Gateway expects X-User-Role occasionally or does authorization via JWT.
-    // The spec says: "every JWT carries a role claim of PASSENGER, STAFF, or ADMIN.
-    // Staff/Admin-only endpoints must be called only from the corresponding dashboards,
-    // and the frontend must hide/disable those UI actions."
   }
 
   const config = {
     ...options,
-    headers
+    headers,
+    signal: controller.signal
   };
 
   let response;
   try {
     response = await fetch(url, config);
-  } catch {
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new ApiError(408, 'Request timed out. Please try again.');
+    }
     throw new ApiError(500, 'Network error. Please check your internet connection or server status.');
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (response.status === 401 && refreshToken && !options._retry) {
@@ -125,7 +131,13 @@ async function request(path, options = {}) {
 
 export const api = {
   get: (path, headers = {}) => request(path, { method: 'GET', headers }),
-  post: (path, body, headers = {}) => request(path, { method: 'POST', body: JSON.stringify(body), headers }),
-  put: (path, body, headers = {}) => request(path, { method: 'PUT', body: JSON.stringify(body), headers }),
-  delete: (path, headers = {}) => request(path, { method: 'DELETE', headers })
+  post: (path, body, headers = {}, timeoutMs) => request(path, { method: 'POST', body: JSON.stringify(body), headers, timeoutMs }),
+  put: (path, body, headers = {}, timeoutMs) => request(path, { method: 'PUT', body: JSON.stringify(body), headers, timeoutMs }),
+  delete: (path, headers = {}) => request(path, { method: 'DELETE', headers }),
+  fireAndForget: (path, body, headers = {}) => {
+    // Fire-and-forget request with a short 5s timeout that never throws to UI
+    request(path, { method: 'POST', body: JSON.stringify(body), headers, timeoutMs: 5000 }).catch(err => {
+      console.warn(`[FireAndForget] Request to ${path} skipped/failed:`, err.message);
+    });
+  }
 };

@@ -140,39 +140,31 @@ export default function ReviewPage({ selectedFlight, selectedSeat, setLatestBook
       // Payment completed! Clear pending booking session
       sessionStorage.removeItem('pendingBooking');
 
-      // Trigger AeroIndia Booking Confirmation & e-Ticket Email
-      try {
-        await api.post('/api/notifications/booking-confirmed', {
-          eventType: 'BOOKING_CONFIRMED',
-          pnr: bookingResponse.pnr || 'AI-' + Math.floor(1000 + Math.random() * 9000),
-          passengerName,
-          passengerEmail,
-          flightNumber: flight.flightNumber || 'AI-801',
-          departureAirport: flight.departureAirport || 'DEL',
-          arrivalAirport: flight.arrivalAirport || 'BOM',
-          departureTime: emailDepTimeFormatted,
-          seatNumber: selectedSeat ? selectedSeat.code : '14A',
-          totalPrice: totalAmount
-        });
-      } catch (e) {
-        console.warn('Booking confirmation email trigger offline', e);
-      }
+      // Trigger AeroIndia Booking Confirmation & e-Ticket Email (Non-blocking)
+      api.fireAndForget('/api/notifications/booking-confirmed', {
+        eventType: 'BOOKING_CONFIRMED',
+        pnr: bookingResponse.pnr || 'AI-' + Math.floor(1000 + Math.random() * 9000),
+        passengerName,
+        passengerEmail,
+        flightNumber: flight.flightNumber || 'AI-801',
+        departureAirport: flight.departureAirport || 'DEL',
+        arrivalAirport: flight.arrivalAirport || 'BOM',
+        departureTime: emailDepTimeFormatted,
+        seatNumber: selectedSeat ? selectedSeat.code : '14A',
+        totalPrice: totalAmount
+      });
 
-      // Redirect to confirmation pass page
+      // Redirect to confirmation pass page immediately
       navigate('/confirmation');
     } catch (err) {
-      // Trigger Abandoned Payment / Pending Reminder Notification
-      try {
-        await api.post('/api/notifications/abandoned-payment', {
-          passengerName: `${user?.firstName || 'Passenger'}`,
-          passengerEmail: user?.email || 'passenger@example.com',
-          pnr: 'AI-' + Math.floor(1000 + Math.random() * 9000),
-          flightRoute: `${flight.departureAirport || 'DEL'} to ${flight.arrivalAirport || 'BOM'}`,
-          amount: totalAmount
-        });
-      } catch (e) {
-        console.warn('Abandoned payment trigger offline', e);
-      }
+      // Trigger Abandoned Payment / Pending Reminder Notification (Non-blocking)
+      api.fireAndForget('/api/notifications/abandoned-payment', {
+        passengerName: `${user?.firstName || 'Passenger'}`,
+        passengerEmail: user?.email || 'passenger@example.com',
+        pnr: 'AI-' + Math.floor(1000 + Math.random() * 9000),
+        flightRoute: `${flight.departureAirport || 'DEL'} to ${flight.arrivalAirport || 'BOM'}`,
+        amount: totalAmount
+      });
 
       setError(err.message || 'Payment or booking transaction failed. Please check connection and retry.');
     } finally {

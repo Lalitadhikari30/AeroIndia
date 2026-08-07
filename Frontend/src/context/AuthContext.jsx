@@ -107,7 +107,7 @@ export function AuthProvider({ children }) {
     setIsLoading(true);
     try {
       // Send the selected role and accessCode for registration
-      await api.post('/api/auth/register', {
+      const data = await api.post('/api/auth/register', {
         email,
         password,
         firstName,
@@ -116,20 +116,27 @@ export function AuthProvider({ children }) {
         accessCode
       });
 
-      // Trigger AeroIndia Welcome Email
-      try {
-        await api.post('/api/notifications/welcome', {
-          passengerName: `${firstName} ${lastName}`,
-          passengerEmail: email
-        });
-      } catch (e) {
-        console.warn('Welcome email trigger offline', e);
+      // If registration response returns tokens directly, store them
+      if (data && data.accessToken) {
+        setTokens(data.accessToken, data.refreshToken);
+      }
+
+      // Trigger AeroIndia Welcome Email asynchronously (non-blocking)
+      api.fireAndForget('/api/notifications/welcome', {
+        passengerName: `${firstName} ${lastName}`,
+        passengerEmail: email
+      });
+
+      // If tokens were set, fetch profile directly, otherwise fallback to login
+      let profile;
+      if (data && data.accessToken) {
+        profile = await fetchProfile();
+      } else {
+        profile = await login(email, password);
       }
 
       setIsLoading(false);
-      
-      // Auto login after registration
-      return await login(email, password);
+      return profile;
     } catch (err) {
       setIsLoading(false);
       throw err;

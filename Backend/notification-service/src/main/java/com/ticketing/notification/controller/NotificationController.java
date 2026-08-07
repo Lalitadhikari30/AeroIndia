@@ -56,7 +56,6 @@ public class NotificationController {
     @PostMapping("/booking-confirmed")
     public ResponseEntity<NotificationLog> sendBookingConfirmedNotification(@RequestBody BookingEvent event) {
         NotificationLog log = emailService.sendBookingConfirmation(event);
-        eventConsumer.processBookingConfirmed(event);
         return ResponseEntity.ok(log);
     }
 

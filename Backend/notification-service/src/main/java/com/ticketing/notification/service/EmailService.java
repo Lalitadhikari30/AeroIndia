@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class EmailService {
@@ -147,18 +148,25 @@ public class EmailService {
             return;
         }
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(new InternetAddress(fromEmail, fromName, "UTF-8"));
-            helper.setTo(recipientEmail);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-            mailSender.send(message);
-            LOG.info("✅ Email dispatched successfully via Gmail SMTP to {}", recipientEmail);
-        } catch (Exception e) {
-            LOG.error("❌ Failed to send email to {}: {}", recipientEmail, e.getMessage());
-        }
+        // Run SMTP dispatch in a background thread so it never blocks the HTTP response thread
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (fromEmail == null || fromEmail.isBlank() || "noreply@aeroindia.com".equals(fromEmail)) {
+                    LOG.warn("⚠ GMAIL_USERNAME is not configured or using default placeholder ({}). Emails may fail SMTP auth.", fromEmail);
+                }
+
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+                helper.setFrom(new InternetAddress(fromEmail, fromName, "UTF-8"));
+                helper.setTo(recipientEmail);
+                helper.setSubject(subject);
+                helper.setText(htmlContent, true);
+                mailSender.send(message);
+                LOG.info("✅ Email dispatched successfully via Gmail SMTP to {}", recipientEmail);
+            } catch (Exception e) {
+                LOG.error("❌ Failed to send email to {}: {}. Make sure GMAIL_USERNAME and GMAIL_APP_PASSWORD (16-char App Password) are correctly set in Render environment variables.", recipientEmail, e.getMessage(), e);
+            }
+        });
     }
 
     private NotificationLog buildLog(BookingEvent event, String subject, String body) {
