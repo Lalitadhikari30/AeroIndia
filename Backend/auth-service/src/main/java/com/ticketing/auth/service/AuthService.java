@@ -123,8 +123,8 @@ public class AuthService {
                 .build();
     }
 
-    @Value("${NOTIFICATION_SERVICE_URL:https://aeroindia-notification-service.onrender.com}")
-    private String notificationServiceUrl;
+    @Value("${services.notification.welcome-url:http://notification-service/api/notifications/welcome}")
+    private String welcomeEmailUrl;
 
     private void triggerWelcomeEmail(RegisterRequest request) {
         try {
@@ -134,19 +134,7 @@ public class AuthService {
             payload.put("passengerName", name.trim());
             payload.put("passengerEmail", request.getEmail());
 
-            String targetUrl = notificationServiceUrl;
-            if (!targetUrl.endsWith("/api/notifications/welcome") && !targetUrl.endsWith("/api/notifications")) {
-                if (!targetUrl.endsWith("/")) targetUrl += "/";
-                targetUrl += "api/notifications/welcome";
-            } else if (targetUrl.endsWith("/api/notifications")) {
-                targetUrl += "/welcome";
-            }
-
-            restTemplate.postForEntity(
-                    targetUrl,
-                    payload,
-                    Object.class
-            );
+            restTemplate.postForEntity(welcomeEmailUrl, payload, Object.class);
             LOG.info("✅ Welcome email triggered for {}", request.getEmail());
         } catch (Exception e) {
             LOG.warn("⚠ Failed to trigger welcome email for {} (notification-service may be offline): {}",

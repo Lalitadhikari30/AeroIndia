@@ -111,14 +111,12 @@ spring:
   config:
     activate:
       on-profile: prod
-  cloud:
-    openfeign:
-      client:
-        config:
-          flight-service:
-            url: ${FLIGHT_SERVICE_URL:https://aeroindia-flight-service.onrender.com}
-          payment-service:
-            url: ${PAYMENT_SERVICE_URL:https://aeroindia-payment-service.onrender.com}
+
+services:
+  flight:
+    url: https://aeroindia-flight-service.onrender.com
+  payment:
+    url: https://aeroindia-payment-service.onrender.com
 
 eureka:
   client:

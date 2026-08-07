@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-@FeignClient(name = "flight-service", url = "${FLIGHT_SERVICE_URL:https://aeroindia-flight-service.onrender.com}", path = "/api/flights")
+@FeignClient(name = "flight-service", url = "${services.flight.url:}", path = "/api/flights")
 public interface FlightServiceClient {
 
     @GetMapping("/{id}")

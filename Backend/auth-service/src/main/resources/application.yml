@@ -62,6 +62,10 @@ spring:
     activate:
       on-profile: prod
 
+services:
+  notification:
+    welcome-url: https://aeroindia-notification-service.onrender.com/api/notifications/welcome
+
 eureka:
   client:
     enabled: false
