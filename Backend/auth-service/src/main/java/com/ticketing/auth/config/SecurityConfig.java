@@ -35,7 +35,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    @LoadBalanced
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }

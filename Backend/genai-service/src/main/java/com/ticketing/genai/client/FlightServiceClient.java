@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "flight-service", path = "/api/flights")
+@FeignClient(name = "flight-service", url = "${FLIGHT_SERVICE_URL:https://aeroindia-flight-service.onrender.com}", path = "/api/flights")
 public interface FlightServiceClient {
     @GetMapping("/search")
     List<Map<String, Object>> searchFlights(@RequestParam("from") String from,
