@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import com.ticketing.auth.model.Role;
 
@@ -127,19 +128,22 @@ public class AuthService {
     private String welcomeEmailUrl;
 
     private void triggerWelcomeEmail(RegisterRequest request) {
-        try {
-            String name = (request.getFirstName() != null ? request.getFirstName() : "") +
-                    " " + (request.getLastName() != null ? request.getLastName() : "");
-            Map<String, String> payload = new HashMap<>();
-            payload.put("passengerName", name.trim());
-            payload.put("passengerEmail", request.getEmail());
+        // Fire-and-forget: don't block registration while notification-service wakes up
+        CompletableFuture.runAsync(() -> {
+            try {
+                String name = (request.getFirstName() != null ? request.getFirstName() : "") +
+                        " " + (request.getLastName() != null ? request.getLastName() : "");
+                Map<String, String> payload = new HashMap<>();
+                payload.put("passengerName", name.trim());
+                payload.put("passengerEmail", request.getEmail());
 
-            restTemplate.postForEntity(welcomeEmailUrl, payload, Object.class);
-            LOG.info("✅ Welcome email triggered for {}", request.getEmail());
-        } catch (Exception e) {
-            LOG.warn("⚠ Failed to trigger welcome email for {} (notification-service may be offline): {}",
-                    request.getEmail(), e.getMessage());
-        }
+                restTemplate.postForEntity(welcomeEmailUrl, payload, Object.class);
+                LOG.info("✅ Welcome email triggered for {}", request.getEmail());
+            } catch (Exception e) {
+                LOG.warn("⚠ Failed to trigger welcome email for {} (notification-service may be offline): {}",
+                        request.getEmail(), e.getMessage());
+            }
+        });
     }
 
     private AuthResponse buildAuthResponse(User user) {

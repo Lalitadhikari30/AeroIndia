@@ -68,8 +68,8 @@ resilience4j:
   retry:
     instances:
       paymentService:
-        max-attempts: 3
-        wait-duration: 500ms
+        max-attempts: 2
+        wait-duration: 5s
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2
         retry-exceptions:
@@ -88,8 +88,8 @@ feign:
   client:
     config:
       default:
-        connect-timeout: 5000
-        read-timeout: 5000
+        connect-timeout: 120000
+        read-timeout: 120000
 
 ---
 spring:
