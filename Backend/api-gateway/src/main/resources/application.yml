@@ -97,27 +97,27 @@ spring:
     gateway:
       routes:
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          uri: ${AUTH_SERVICE_URL:https://aeroindia-auth-service.onrender.com}
           predicates:
             - Path=/api/auth/**
         - id: flight-service
-          uri: ${FLIGHT_SERVICE_URL:http://localhost:8082}
+          uri: ${FLIGHT_SERVICE_URL:https://aeroindia-flight-service.onrender.com}
           predicates:
             - Path=/api/flights/**
         - id: booking-service
-          uri: ${BOOKING_SERVICE_URL:http://localhost:8083}
+          uri: ${BOOKING_SERVICE_URL:https://aeroindia-booking-service.onrender.com}
           predicates:
             - Path=/api/bookings/**
         - id: payment-service
-          uri: ${PAYMENT_SERVICE_URL:http://localhost:8084}
+          uri: ${PAYMENT_SERVICE_URL:https://aeroindia-payment-service.onrender.com}
           predicates:
             - Path=/api/payments/**
         - id: notification-service
-          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8085}
+          uri: ${NOTIFICATION_SERVICE_URL:https://aeroindia-notification-service.onrender.com}
           predicates:
             - Path=/api/notifications/**
         - id: genai-service
-          uri: ${GENAI_SERVICE_URL:http://localhost:8086}
+          uri: ${GENAI_SERVICE_URL:https://aeroindia-genai-service.onrender.com}
           predicates:
             - Path=/api/genai/**
 

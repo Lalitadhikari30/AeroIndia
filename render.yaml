@@ -79,15 +79,9 @@ services:
       - key: REDIS_PASSWORD
         sync: false
       - key: FLIGHT_SERVICE_URL
-        fromService:
-          name: aeroindia-flight-service
-          type: web
-          property: host
+        sync: false
       - key: PAYMENT_SERVICE_URL
-        fromService:
-          name: aeroindia-payment-service
-          type: web
-          property: host
+        sync: false
 
   # ─── 4. Payment Service ─────────────────────────────────────
   - type: web
@@ -157,10 +151,7 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: FLIGHT_SERVICE_URL
-        fromService:
-          name: aeroindia-flight-service
-          type: web
-          property: host
+        sync: false
 
   # ─── 7. API Gateway (deploy LAST) ──────────────────────────
   - type: web
@@ -180,32 +171,14 @@ services:
       - key: ALLOWED_ORIGINS
         sync: false
       - key: AUTH_SERVICE_URL
-        fromService:
-          name: aeroindia-auth-service
-          type: web
-          property: host
+        sync: false
       - key: FLIGHT_SERVICE_URL
-        fromService:
-          name: aeroindia-flight-service
-          type: web
-          property: host
+        sync: false
       - key: BOOKING_SERVICE_URL
-        fromService:
-          name: aeroindia-booking-service
-          type: web
-          property: host
+        sync: false
       - key: PAYMENT_SERVICE_URL
-        fromService:
-          name: aeroindia-payment-service
-          type: web
-          property: host
+        sync: false
       - key: NOTIFICATION_SERVICE_URL
-        fromService:
-          name: aeroindia-notification-service
-          type: web
-          property: host
+        sync: false
       - key: GENAI_SERVICE_URL
-        fromService:
-          name: aeroindia-genai-service
-          type: web
-          property: host
+        sync: false
