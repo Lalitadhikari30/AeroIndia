@@ -1,0 +1,211 @@
+# ═══════════════════════════════════════════════════════════════
+# AeroIndia — Render Blueprint (render.yaml)
+# Deploy all backend services from one file.
+# Region: singapore (closest to India for low latency)
+# ═══════════════════════════════════════════════════════════════
+
+services:
+  # ─── 1. Auth Service ────────────────────────────────────────
+  - type: web
+    runtime: docker
+    name: aeroindia-auth-service
+    rootDir: Backend/auth-service
+    region: singapore
+    plan: free
+    healthCheckPath: /api/auth/actuator/health
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+  # ─── 2. Flight Service ──────────────────────────────────────
+  - type: web
+    runtime: docker
+    name: aeroindia-flight-service
+    rootDir: Backend/flight-service
+    region: singapore
+    plan: free
+    healthCheckPath: /api/flights/actuator/health
+    envVars:
+      - key: PORT
+        value: 8082
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+
+  # ─── 3. Booking Service ─────────────────────────────────────
+  - type: web
+    runtime: docker
+    name: aeroindia-booking-service
+    rootDir: Backend/booking-service
+    region: singapore
+    plan: free
+    healthCheckPath: /api/bookings/actuator/health
+    envVars:
+      - key: PORT
+        value: 8083
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: KAFKA_SERVERS
+        sync: false
+      - key: KAFKA_USERNAME
+        sync: false
+      - key: KAFKA_PASSWORD
+        sync: false
+      - key: ENABLE_REDIS
+        value: "true"
+      - key: REDIS_ADDRESS
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: FLIGHT_SERVICE_URL
+        fromService:
+          name: aeroindia-flight-service
+          type: web
+          property: host
+      - key: PAYMENT_SERVICE_URL
+        fromService:
+          name: aeroindia-payment-service
+          type: web
+          property: host
+
+  # ─── 4. Payment Service ─────────────────────────────────────
+  - type: web
+    runtime: docker
+    name: aeroindia-payment-service
+    rootDir: Backend/payment-service
+    region: singapore
+    plan: free
+    healthCheckPath: /api/payments/actuator/health
+    envVars:
+      - key: PORT
+        value: 8084
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+
+  # ─── 5. Notification Service ────────────────────────────────
+  - type: web
+    runtime: docker
+    name: aeroindia-notification-service
+    rootDir: Backend/notification-service
+    region: singapore
+    plan: free
+    healthCheckPath: /api/notifications/actuator/health
+    envVars:
+      - key: PORT
+        value: 8085
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: GMAIL_USERNAME
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: KAFKA_SERVERS
+        sync: false
+      - key: KAFKA_USERNAME
+        sync: false
+      - key: KAFKA_PASSWORD
+        sync: false
+      - key: ENABLE_KAFKA
+        value: "true"
+
+  # ─── 6. GenAI Service ───────────────────────────────────────
+  - type: web
+    runtime: docker
+    name: aeroindia-genai-service
+    rootDir: Backend/genai-service
+    region: singapore
+    plan: free
+    healthCheckPath: /api/genai/actuator/health
+    envVars:
+      - key: PORT
+        value: 8086
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FLIGHT_SERVICE_URL
+        fromService:
+          name: aeroindia-flight-service
+          type: web
+          property: host
+
+  # ─── 7. API Gateway (deploy LAST) ──────────────────────────
+  - type: web
+    runtime: docker
+    name: aeroindia-api-gateway
+    rootDir: Backend/api-gateway
+    region: singapore
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JWT_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: AUTH_SERVICE_URL
+        fromService:
+          name: aeroindia-auth-service
+          type: web
+          property: host
+      - key: FLIGHT_SERVICE_URL
+        fromService:
+          name: aeroindia-flight-service
+          type: web
+          property: host
+      - key: BOOKING_SERVICE_URL
+        fromService:
+          name: aeroindia-booking-service
+          type: web
+          property: host
+      - key: PAYMENT_SERVICE_URL
+        fromService:
+          name: aeroindia-payment-service
+          type: web
+          property: host
+      - key: NOTIFICATION_SERVICE_URL
+        fromService:
+          name: aeroindia-notification-service
+          type: web
+          property: host
+      - key: GENAI_SERVICE_URL
+        fromService:
+          name: aeroindia-genai-service
+          type: web
+          property: host

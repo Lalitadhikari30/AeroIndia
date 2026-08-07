@@ -1,15 +1,55 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
     name: api-gateway
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   cloud:
     gateway:
       discovery:
         locator:
           enabled: true
           lower-case-service-id: true
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Auth Service
+        url: /api/auth/v3/api-docs
+      - name: Flight Service
+        url: /api/flights/v3/api-docs
+      - name: Booking Service
+        url: /api/bookings/v3/api-docs
+      - name: Payment Service
+        url: /api/payments/v3/api-docs
+
+---
+# ═══════════════════════════════════════
+# LOCAL profile — uses Eureka discovery
+# ═══════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    gateway:
       routes:
         - id: auth-service
           uri: lb://auth-service
@@ -45,17 +85,42 @@ eureka:
   instance:
     prefer-ip-address: true
 
-jwt:
-  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+---
+# ═══════════════════════════════════════
+# PROD profile — direct URL routing
+# ═══════════════════════════════════════
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/auth/**
+        - id: flight-service
+          uri: ${FLIGHT_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/flights/**
+        - id: booking-service
+          uri: ${BOOKING_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/bookings/**
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/payments/**
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8085}
+          predicates:
+            - Path=/api/notifications/**
+        - id: genai-service
+          uri: ${GENAI_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/api/genai/**
 
-springdoc:
-  swagger-ui:
-    urls:
-      - name: Auth Service
-        url: /api/auth/v3/api-docs
-      - name: Flight Service  
-        url: /api/flights/v3/api-docs
-      - name: Booking Service
-        url: /api/bookings/v3/api-docs
-      - name: Payment Service
-        url: /api/payments/v3/api-docs
+eureka:
+  client:
+    enabled: false

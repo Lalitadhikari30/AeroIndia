@@ -1,16 +1,18 @@
 server:
-  port: 8085
+  port: ${PORT:8085}
   servlet:
     context-path: /api/notifications
 
 spring:
   application:
     name: notification-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${GMAIL_USERNAME:adhikarilalit9968@gmail.com}
-    password: ${GMAIL_APP_PASSWORD:osdi oyeg wtfk ntjw}
+    username: ${GMAIL_USERNAME:}
+    password: ${GMAIL_APP_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -18,7 +20,7 @@ spring:
           starttls:
             enable: true
   kafka:
-    bootstrap-servers: ${KAFKA_SERVERS:d9gv03v2pim8v25absv0.any.ap-south-1.mpx.prd.cloud.redpanda.com:9092}
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     listener:
       auto-startup: ${ENABLE_KAFKA:true}
     consumer:
@@ -29,28 +31,53 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
     properties:
-      security.protocol: SASL_SSL
-      sasl.mechanism: SCRAM-SHA-256
-      sasl.jaas.config: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USERNAME:admin}" password="${KAFKA_PASSWORD:password}";'
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
-    register-with-eureka: ${ENABLE_EUREKA:true}
-    fetch-registry: ${ENABLE_EUREKA:true}
-  instance:
-    prefer-ip-address: true
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:SCRAM-SHA-256}
+      sasl.jaas.config: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USERNAME:admin}" password="${KAFKA_PASSWORD:}";'
 
 notification:
   email:
     enabled: true
-    from: ${GMAIL_USERNAME:adhikarilalit9968@gmail.com}
+    from: ${GMAIL_USERNAME:}
   sms:
     enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+eureka:
+  client:
+    enabled: false
