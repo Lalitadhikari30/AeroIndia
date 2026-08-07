@@ -83,8 +83,21 @@ public class BookingService {
         }
 
         try {
-            // Get base price from flight info (assuming it's returned)
             BigDecimal basePrice = new BigDecimal(flightInfo.getOrDefault("basePrice", "1000.0").toString());
+            BigDecimal finalPrice = req.getTotalPrice() != null ? req.getTotalPrice() : basePrice;
+
+            java.time.LocalDateTime depTime = null;
+            if (req.getDepartureTime() != null && !req.getDepartureTime().isBlank()) {
+                try {
+                    String cleanIso = req.getDepartureTime().replace(" ", "T");
+                    if (!cleanIso.contains("T")) cleanIso += "T08:30:00";
+                    depTime = java.time.LocalDateTime.parse(cleanIso);
+                } catch (Exception e) {
+                    depTime = java.time.LocalDateTime.now().plusDays(5);
+                }
+            } else {
+                depTime = java.time.LocalDateTime.now().plusDays(5);
+            }
 
             // 4. Create Booking
             Booking booking = Booking.builder()
@@ -92,14 +105,14 @@ public class BookingService {
                     .passengerName(req.getPassengerName())
                     .passengerEmail(req.getPassengerEmail())
                     .flightId(req.getFlightId())
-                    .flightNumber((String) flightInfo.get("flightNumber"))
+                    .flightNumber((String) flightInfo.getOrDefault("flightNumber", "AI-801"))
                     .seatNumber(req.getSeatNumber())
                     .seatClass(req.getSeatClass())
-                    .departureAirport((String) flightInfo.get("departureAirport"))
-                    .arrivalAirport((String) flightInfo.get("arrivalAirport"))
-                    // .departureTime() // parse if available
+                    .departureAirport((String) flightInfo.getOrDefault("departureAirport", "DEL"))
+                    .arrivalAirport((String) flightInfo.getOrDefault("arrivalAirport", "BOM"))
+                    .departureTime(depTime)
                     .basePrice(basePrice)
-                    .totalPrice(basePrice) // initially base price
+                    .totalPrice(finalPrice)
                     .status(BookingStatus.PENDING)
                     .pnr(generatePnr())
                     .idempotencyKey(req.getIdempotencyKey())

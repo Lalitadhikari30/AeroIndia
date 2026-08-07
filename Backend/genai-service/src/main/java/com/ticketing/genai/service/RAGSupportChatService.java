@@ -17,6 +17,7 @@ import java.util.UUID;
 public class RAGSupportChatService {
 
     private final RetrievalService retrievalService;
+    private final GenerationService generationService;
 
     public SupportQueryResponse processSupportQuery(SupportQueryRequest request) {
         String convId = request.getConversationId();
@@ -27,7 +28,7 @@ public class RAGSupportChatService {
         String userQuery = request.getQuery();
         log.info("Processing RAG passenger support query: '{}' (convId: {})", userQuery, convId);
 
-        // 1. Retrieve top-K relevant FAQ chunks
+        // 1. Retrieve top-K relevant FAQ chunks (pgvector / similarity search unchanged)
         List<RetrievalService.ScoredFaq> matches = retrievalService.retrieveRelevantFaqs(userQuery);
 
         if (matches.isEmpty()) {
@@ -58,23 +59,50 @@ public class RAGSupportChatService {
                     i + 1, faq.getTitle(), faq.getCategory(), faq.getSubcategory(), faq.getContent(), faq.getSourceUrl()));
         }
 
-        // 3. Construct Answer from Grounded Context
-        StringBuilder answerBuilder = new StringBuilder();
-        answerBuilder.append("Based on official Airports Authority of India (AAI) guidelines:\n\n");
-
+        // 3. Fallback raw text representation
+        StringBuilder fallbackBuilder = new StringBuilder();
+        fallbackBuilder.append("Based on official Airports Authority of India (AAI) guidelines:\n\n");
         for (RetrievalService.ScoredFaq scoredFaq : matches) {
             FaqEmbedding faq = scoredFaq.getFaq();
-            answerBuilder.append("• **").append(faq.getTitle()).append("** (").append(faq.getCategory());
+            fallbackBuilder.append("• **").append(faq.getTitle()).append("** (").append(faq.getCategory());
             if (faq.getSubcategory() != null && !faq.getSubcategory().isEmpty()) {
-                answerBuilder.append(" - ").append(faq.getSubcategory());
+                fallbackBuilder.append(" - ").append(faq.getSubcategory());
             }
-            answerBuilder.append("):\n  ").append(faq.getContent()).append("\n\n");
+            fallbackBuilder.append("):\n  ").append(faq.getContent()).append("\n\n");
+        }
+        fallbackBuilder.append("For further official assistance or escalations, you may visit ").append(matches.get(0).getFaq().getSourceUrl());
+        String fallbackAnswer = fallbackBuilder.toString().trim();
+
+        // 4. Generation Step: Prompt Gemini model with retrieved context
+        String prompt = String.format("""
+                You are AeroIndia's official flight assistant. Answer the passenger's question using ONLY the context provided below.
+                If the context doesn't contain the answer, politely state that you don't have that specific information.
+                Provide a clear, natural, and helpful response.
+
+                Context:
+                %s
+
+                Question:
+                %s
+                """, contextBuilder.toString().trim(), userQuery);
+
+        String finalAnswer;
+        try {
+            String generatedAnswer = generationService.generate(prompt);
+            if (generatedAnswer != null && !generatedAnswer.trim().isEmpty()) {
+                finalAnswer = generatedAnswer.trim();
+                log.info("Successfully generated natural response via Gemini for query: '{}'", userQuery);
+            } else {
+                log.warn("Gemini generation returned empty/null answer. Falling back to raw retrieved chunks.");
+                finalAnswer = fallbackAnswer;
+            }
+        } catch (Exception e) {
+            log.error("Gemini generation failed: {}. Falling back to raw retrieved chunks.", e.getMessage());
+            finalAnswer = fallbackAnswer;
         }
 
-        answerBuilder.append("For further official assistance or escalations, you may visit ").append(matches.get(0).getFaq().getSourceUrl());
-
         return SupportQueryResponse.builder()
-                .answer(answerBuilder.toString().trim())
+                .answer(finalAnswer)
                 .sources(sources)
                 .confidenceScore(Math.round(topScore * 100.0) / 100.0)
                 .conversationId(convId)

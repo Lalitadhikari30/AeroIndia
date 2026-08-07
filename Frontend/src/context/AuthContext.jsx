@@ -136,7 +136,20 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Send pending booking / abandoned payment notice with coupon code if logging out during pending checkout
+    try {
+      const savedPending = sessionStorage.getItem('pendingBooking');
+      if (savedPending) {
+        const parsed = JSON.parse(savedPending);
+        if (parsed && parsed.passengerEmail) {
+          sessionStorage.removeItem('pendingBooking');
+          await api.post('/api/notifications/abandoned-payment', parsed);
+        }
+      }
+    } catch (err) {
+      console.warn('Pending booking notification error', err);
+    }
     handleLogoutLocal();
   };
 

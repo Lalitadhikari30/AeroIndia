@@ -72,8 +72,8 @@ public class NotificationController {
         return ResponseEntity.ok(log);
     }
 
-    @PostMapping("/test/resend-booking")
-    public ResponseEntity<Map<String, Object>> testResendBooking(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
+    @PostMapping("/test/booking")
+    public ResponseEntity<Map<String, Object>> testBookingEmail(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
         BookingEvent event = BookingEvent.builder()
                 .eventType("BOOKING_CONFIRMED")
                 .bookingId("B-1002")
@@ -89,11 +89,11 @@ public class NotificationController {
                 .build();
 
         eventConsumer.processBookingConfirmed(event);
-        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Resend booking confirmation email dispatched", "recipient", recipientEmail));
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Booking confirmation email dispatched via Gmail SMTP", "recipient", recipientEmail));
     }
 
-    @PostMapping("/test/resend-payment")
-    public ResponseEntity<Map<String, Object>> testResendPayment(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
+    @PostMapping("/test/payment")
+    public ResponseEntity<Map<String, Object>> testPaymentEmail(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
         PaymentSuccessEvent event = PaymentSuccessEvent.builder()
                 .passengerName("Rajesh Kumar")
                 .passengerEmail(recipientEmail)
@@ -107,11 +107,11 @@ public class NotificationController {
                 .build();
 
         eventConsumer.processPaymentSuccess(event);
-        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Resend payment success email dispatched", "recipient", recipientEmail));
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Payment success email dispatched via Gmail SMTP", "recipient", recipientEmail));
     }
 
-    @PostMapping("/test/resend-cancellation")
-    public ResponseEntity<Map<String, Object>> testResendCancellation(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
+    @PostMapping("/test/cancellation")
+    public ResponseEntity<Map<String, Object>> testCancellationEmail(@RequestParam(defaultValue = "passenger@aeroindia.com") String recipientEmail) {
         BookingCancelledEvent event = BookingCancelledEvent.builder()
                 .passengerName("Rajesh Kumar")
                 .passengerEmail(recipientEmail)
@@ -125,6 +125,6 @@ public class NotificationController {
                 .build();
 
         eventConsumer.processBookingCancelled(event);
-        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Resend booking cancellation email dispatched", "recipient", recipientEmail));
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "Booking cancellation email dispatched via Gmail SMTP", "recipient", recipientEmail));
     }
 }

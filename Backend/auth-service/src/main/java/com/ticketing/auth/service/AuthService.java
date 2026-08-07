@@ -11,9 +11,12 @@ import com.ticketing.auth.exception.InvalidTokenException;
 import com.ticketing.auth.model.User;
 import com.ticketing.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +29,12 @@ import com.ticketing.auth.model.Role;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AuthService.class);
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RestTemplate restTemplate;
 
     @Value("${jwt.access-token-expiration}")
     private long jwtExpiration;
@@ -58,6 +64,9 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+        // Trigger welcome email via notification-service
+        triggerWelcomeEmail(request);
 
         return buildAuthResponse(user);
     }
@@ -112,6 +121,26 @@ public class AuthService {
                 .role(user.getRole().name())
                 .createdAt(user.getCreatedAt())
                 .build();
+    }
+
+    private void triggerWelcomeEmail(RegisterRequest request) {
+        try {
+            String name = (request.getFirstName() != null ? request.getFirstName() : "") +
+                    " " + (request.getLastName() != null ? request.getLastName() : "");
+            Map<String, String> payload = new HashMap<>();
+            payload.put("passengerName", name.trim());
+            payload.put("passengerEmail", request.getEmail());
+
+            restTemplate.postForEntity(
+                    "http://notification-service/api/notifications/welcome",
+                    payload,
+                    Object.class
+            );
+            LOG.info("✅ Welcome email triggered for {}", request.getEmail());
+        } catch (Exception e) {
+            LOG.warn("⚠ Failed to trigger welcome email for {} (notification-service may be offline): {}",
+                    request.getEmail(), e.getMessage());
+        }
     }
 
     private AuthResponse buildAuthResponse(User user) {

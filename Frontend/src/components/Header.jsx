@@ -16,8 +16,8 @@ export default function Header() {
     }
   };
 
-  const handleLogoutClick = () => {
-    logout();
+  const handleLogoutClick = async () => {
+    await logout();
     setDropdownOpen(false);
     navigate('/login');
   };

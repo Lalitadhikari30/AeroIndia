@@ -1,7 +1,7 @@
 package com.ticketing.flight.repository;
 
 import com.ticketing.flight.model.Flight;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface FlightRepository extends MongoRepository<Flight, String> {
+public interface FlightRepository extends JpaRepository<Flight, String> {
     
     List<Flight> findByDepartureAirportAndArrivalAirportAndDepartureTimeBetween(String departureAirport, String arrivalAirport, LocalDateTime start, LocalDateTime end);
     

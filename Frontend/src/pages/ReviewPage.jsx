@@ -44,12 +44,47 @@ export default function ReviewPage({ selectedFlight, selectedSeat, setLatestBook
   const seatFee = selectedSeat ? selectedSeat.price : 0;
   const seatLabel = selectedSeat ? `Seat Selection (${selectedSeat.code} - ${selectedSeat.category})` : "Seat Selection";
 
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [promoMessage, setPromoMessage] = useState('');
+  const [promoError, setPromoError] = useState('');
+
   // Fare calculations
   const baseFare = flight.price;
   const taxes = 1450;    // Fixed conv
   const convenienceFee = 300; // Fixed conv
   const insuranceFee = 249;   // Fixed conv
-  const totalAmount = baseFare + taxes + convenienceFee + insuranceFee + seatFee;
+  const rawTotal = baseFare + taxes + convenienceFee + insuranceFee + seatFee;
+  const totalAmount = Math.max(0, rawTotal - discount);
+
+  // Store pending booking session details for abandoned payment notifications
+  useEffect(() => {
+    if (!user?.email) return;
+    const pendingData = {
+      passengerName: `${user?.firstName || 'Passenger'} ${user?.lastName || ''}`.trim(),
+      passengerEmail: user.email,
+      pnr: 'AI-PENDING-' + Math.floor(1000 + Math.random() * 9000),
+      flightRoute: `${flight.departureAirport || 'DEL'} to ${flight.arrivalAirport || 'BOM'}`,
+      amount: totalAmount
+    };
+    sessionStorage.setItem('pendingBooking', JSON.stringify(pendingData));
+  }, [user, flight, totalAmount]);
+
+  const handleApplyPromo = (e) => {
+    e.preventDefault();
+    setPromoError('');
+    setPromoMessage('');
+    const cleanCode = promoCode.trim().toUpperCase();
+
+    if (!cleanCode) return;
+
+    if (cleanCode === 'PAYSAFE5' || cleanCode === 'FLY2026' || cleanCode === 'AERO10') {
+      setDiscount(500);
+      setPromoMessage('🎉 Promo code applied! ₹500 discount added.');
+    } else {
+      setPromoError('Invalid code. Use code PAYSAFE5 to save ₹500!');
+    }
+  };
 
   const handleProceed = async () => {
     if (!agreed) return;
@@ -62,15 +97,23 @@ export default function ReviewPage({ selectedFlight, selectedSeat, setLatestBook
       const userId = user?.id || 'guest-user-123';
       
       // Step 1: Create Booking -> POST /api/bookings
-      // Request Headers require X-User-Id
       const seatClassMapped = selectedSeat?.category?.toUpperCase()?.includes('BUSINESS') ? 'BUSINESS' : 'ECONOMY';
       
+      const formattedDeparture = flight.departureDate 
+        ? `${flight.departureDate}T${flight.departureTime ? flight.departureTime.replace(/\s*[AP]M/i, '').trim() : '08:30:00'}` 
+        : '2026-08-10T08:30:00';
+      const emailDepTimeFormatted = flight.departureDate 
+        ? `${flight.departureDate} ${flight.departureTime || '08:30 AM'}` 
+        : '10 Aug 2026 08:30 AM';
+
       const bookingPayload = {
         flightId: flight.id,
         seatNumber: selectedSeat ? selectedSeat.code : '14A',
         seatClass: seatClassMapped,
         passengerName,
         passengerEmail,
+        totalPrice: totalAmount,
+        departureTime: formattedDeparture,
         idempotencyKey: Math.random().toString(36).substring(2) + Date.now().toString(36)
       };
 
@@ -94,6 +137,9 @@ export default function ReviewPage({ selectedFlight, selectedSeat, setLatestBook
       setLatestBooking(bookingResponse);
       setLatestPayment(paymentResponse);
 
+      // Payment completed! Clear pending booking session
+      sessionStorage.removeItem('pendingBooking');
+
       // Trigger AeroIndia Booking Confirmation & e-Ticket Email
       try {
         await api.post('/api/notifications/booking-confirmed', {
@@ -104,7 +150,7 @@ export default function ReviewPage({ selectedFlight, selectedSeat, setLatestBook
           flightNumber: flight.flightNumber || 'AI-801',
           departureAirport: flight.departureAirport || 'DEL',
           arrivalAirport: flight.arrivalAirport || 'BOM',
-          departureTime: '2026-08-05 08:30 AM',
+          departureTime: emailDepTimeFormatted,
           seatNumber: selectedSeat ? selectedSeat.code : '14A',
           totalPrice: totalAmount
         });
@@ -278,6 +324,32 @@ export default function ReviewPage({ selectedFlight, selectedSeat, setLatestBook
               <span>{seatLabel}</span>
               <span>{seatFee === 0 ? 'FREE' : `₹${seatFee.toLocaleString('en-IN')}`}</span>
             </div>
+
+            {/* Promo Code Form */}
+            <div style={{ marginTop: '16px' }}>
+              <form onSubmit={handleApplyPromo} style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  placeholder="Coupon Code (e.g. PAYSAFE5)"
+                  className="form-input"
+                  style={{ padding: '6px 10px', fontSize: '0.8rem', textTransform: 'uppercase' }}
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                />
+                <button type="submit" className="btn-outline" style={{ padding: '6px 12px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                  Apply
+                </button>
+              </form>
+              {promoMessage && <div style={{ color: '#16a34a', fontSize: '0.75rem', marginTop: '4px', fontWeight: 600 }}>{promoMessage}</div>}
+              {promoError && <div style={{ color: 'var(--danger-red)', fontSize: '0.75rem', marginTop: '4px' }}>{promoError}</div>}
+            </div>
+
+            {discount > 0 && (
+              <div className="fare-item-row" style={{ color: '#16a34a', fontWeight: 600, marginTop: '8px' }}>
+                <span>Promo Discount</span>
+                <span>-₹{discount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
 
             <div className="fare-divider"></div>
 

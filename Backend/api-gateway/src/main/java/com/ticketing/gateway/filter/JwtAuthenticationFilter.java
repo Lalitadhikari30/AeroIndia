@@ -32,6 +32,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/api/auth/refresh",
             "/api/flights/search",
             "/api/flights/airports",
+            "/api/notifications",
             "/eureka",
             "/swagger-ui",
             "/v3/api-docs"

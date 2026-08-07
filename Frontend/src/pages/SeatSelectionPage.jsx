@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { api } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 export default function SeatSelectionPage({ selectedFlight, setSelectedSeat }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [seatData, setSeatData] = useState(null);
   const [chosenSeat, setChosenSeat] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,6 +65,18 @@ export default function SeatSelectionPage({ selectedFlight, setSelectedSeat }) {
       price: parseFloat(chosenSeat.price || 0),
       category: chosenSeat.seatClass || 'Standard Seat'
     });
+
+    if (user?.email) {
+      const pendingData = {
+        passengerName: `${user?.firstName || 'Passenger'} ${user?.lastName || ''}`.trim(),
+        passengerEmail: user.email,
+        pnr: 'AI-PENDING-' + Math.floor(1000 + Math.random() * 9000),
+        flightRoute: `${flight.departureAirport || 'DEL'} to ${flight.arrivalAirport || 'BOM'} (Seat ${chosenSeat.seatNumber})`,
+        amount: (flight.price || 6800) + parseFloat(chosenSeat.price || 0)
+      };
+      sessionStorage.setItem('pendingBooking', JSON.stringify(pendingData));
+    }
+
     navigate('/review');
   };
 

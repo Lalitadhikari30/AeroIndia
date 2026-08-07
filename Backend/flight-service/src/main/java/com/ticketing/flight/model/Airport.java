@@ -1,24 +1,24 @@
 package com.ticketing.flight.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "airports")
+@Entity
+@Table(name = "airports")
 public class Airport {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     
-    @Indexed(unique = true)
+    @Column(unique = true)
     private String iataCode;
     
     private String name;

@@ -3,7 +3,7 @@ package com.ticketing.notification.consumer;
 import com.ticketing.notification.dto.BookingCancelledEvent;
 import com.ticketing.notification.dto.PaymentSuccessEvent;
 import com.ticketing.notification.event.BookingEvent;
-import com.ticketing.notification.service.ResendEmailService;
+import com.ticketing.notification.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class NotificationEventConsumer {
 
-    private final ResendEmailService resendEmailService;
+    private final EmailService emailService;
     private final TemplateEngine templateEngine;
 
     // Idempotency cache preventing duplicate email dispatches
@@ -76,7 +76,7 @@ public class NotificationEventConsumer {
             String htmlBody = templateEngine.process("booking-confirmation", ctx);
             String subject = "✈ Booking Confirmed! E-Ticket for PNR: " + event.getPnr();
 
-            resendEmailService.sendHtmlEmail(event.getPassengerEmail(), subject, htmlBody);
+            emailService.sendHtmlEmail(event.getPassengerEmail(), subject, htmlBody);
         } catch (Exception e) {
             log.error("Failed to render/send booking confirmation email for PNR {}", event.getPnr(), e);
         }
@@ -94,7 +94,7 @@ public class NotificationEventConsumer {
             String htmlBody = templateEngine.process("payment-success", ctx);
             String subject = "💳 Payment Received — Tax Invoice for Booking " + event.getBookingId();
 
-            resendEmailService.sendHtmlEmail(event.getPassengerEmail(), subject, htmlBody);
+            emailService.sendHtmlEmail(event.getPassengerEmail(), subject, htmlBody);
         } catch (Exception e) {
             log.error("Failed to render/send payment success email for booking {}", event.getBookingId(), e);
         }
@@ -111,7 +111,7 @@ public class NotificationEventConsumer {
             String htmlBody = templateEngine.process("booking-cancellation", ctx);
             String subject = "✈ Booking Cancellation Notice — PNR: " + event.getPnr();
 
-            resendEmailService.sendHtmlEmail(event.getPassengerEmail(), subject, htmlBody);
+            emailService.sendHtmlEmail(event.getPassengerEmail(), subject, htmlBody);
         } catch (Exception e) {
             log.error("Failed to render/send cancellation email for booking {}", event.getBookingId(), e);
         }
@@ -128,7 +128,7 @@ public class NotificationEventConsumer {
             String htmlBody = templateEngine.process("booking-cancellation", ctx);
             String subject = "✈ Booking Cancellation Notice — Booking: " + event.getBookingId();
 
-            resendEmailService.sendHtmlEmail(event.getPassengerEmail(), subject, htmlBody);
+            emailService.sendHtmlEmail(event.getPassengerEmail(), subject, htmlBody);
         } catch (Exception e) {
             log.error("Failed to render/send cancellation email for booking {}", event.getBookingId(), e);
         }

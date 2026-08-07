@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -27,6 +29,10 @@ public class BookingRequest {
 
     @Email(message = "Valid email is required")
     private String passengerEmail;
+
+    private BigDecimal totalPrice;
+
+    private String departureTime;
 
     @NotBlank(message = "Idempotency key is required")
     private String idempotencyKey;

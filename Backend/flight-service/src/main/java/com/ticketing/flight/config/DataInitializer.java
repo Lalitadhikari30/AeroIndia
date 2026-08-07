@@ -30,7 +30,7 @@ public class DataInitializer implements CommandLineRunner {
                 seedFlights();
             }
         } catch (Exception e) {
-            org.slf4j.LoggerFactory.getLogger(DataInitializer.class).warn("MongoDB is offline or unreachable. Skipping automatic airport/flight data seeding: {}", e.getMessage());
+            org.slf4j.LoggerFactory.getLogger(DataInitializer.class).warn("Database error during automatic airport/flight data seeding: {}", e.getMessage());
         }
     }
 

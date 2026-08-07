@@ -6,10 +6,21 @@ server:
 spring:
   application:
     name: notification-service
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME:adhikarilalit9968@gmail.com}
+    password: ${GMAIL_APP_PASSWORD:osdi oyeg wtfk ntjw}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   kafka:
-    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_SERVERS:d9gv03v2pim8v25absv0.any.ap-south-1.mpx.prd.cloud.redpanda.com:9092}
     listener:
-      auto-startup: ${ENABLE_KAFKA:false}
+      auto-startup: ${ENABLE_KAFKA:true}
     consumer:
       group-id: notification-service
       auto-offset-reset: earliest
@@ -17,25 +28,24 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: SCRAM-SHA-256
+      sasl.jaas.config: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USERNAME:admin}" password="${KAFKA_PASSWORD:password}";'
 
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
-    register-with-eureka: ${ENABLE_EUREKA:false}
-    fetch-registry: ${ENABLE_EUREKA:false}
+    register-with-eureka: ${ENABLE_EUREKA:true}
+    fetch-registry: ${ENABLE_EUREKA:true}
   instance:
     prefer-ip-address: true
-
-resend:
-  api-key: ${RESEND_API_KEY:re_JYaDygST_8QQz312iEkDuUoebQBgvPJ3B}
-  from-email: onboarding@resend.dev
-  from-name: "Aeroइंडिया Flight Services"
 
 notification:
   email:
     enabled: true
-    from: onboarding@resend.dev
+    from: ${GMAIL_USERNAME:adhikarilalit9968@gmail.com}
   sms:
     enabled: true
 

@@ -119,9 +119,13 @@ export default function MyBookingsPage() {
   const filteredBookings = bookingsList.filter((b) => {
     // Tab filtering
     const statusLower = b.status?.toLowerCase() || '';
-    if (activeTab === 'Upcoming' && (statusLower === 'cancelled' || statusLower === 'expired')) return false;
-    if (activeTab === 'Cancelled' && statusLower !== 'cancelled') return false;
-    if (activeTab === 'Completed' && statusLower !== 'completed') return false; // Mock data is usually confirmed/upcoming
+    if (activeTab === 'Upcoming') {
+      if (statusLower === 'cancelled' || statusLower === 'expired') return false;
+    } else if (activeTab === 'Completed') {
+      if (statusLower !== 'completed' && statusLower !== 'confirmed') return false;
+    } else if (activeTab === 'Cancelled') {
+      if (statusLower !== 'cancelled') return false;
+    }
 
     // Search query filtering
     if (!searchQuery) return true;
